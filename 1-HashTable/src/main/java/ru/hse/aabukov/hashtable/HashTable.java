@@ -11,6 +11,9 @@ public class HashTable {
     private int keysCount;
     private final int INITIAL_CAPACITY = 5;
 
+    /**
+     * Creates an empty hash table
+     * /
     public HashTable() {
         buckets = new KeyValueList[INITIAL_CAPACITY];
         capacity = INITIAL_CAPACITY;

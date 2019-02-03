@@ -1,27 +1,26 @@
 package ru.hse.aabukov.hashtable;
 
-/**
- * Implements associative array interface for pairs of strings using linked list
- */
+import org.jetbrains.annotations.NotNull;
+
+/** Implements associative array interface for pairs of strings using linked list */
 public class KeyValueList {
 
     private Node begin = null;
 
-    /**
-     * Removes the first element from the list
-     */
+    /** Removes the first element from the list */
     public void popFront() {
-        if(begin != null) {
+        if (begin != null) {
             begin = begin.next;
         }
     }
 
     /**
      * Returns the key of the first element in the list
+     *
      * @return The key of the first element
      */
     public String frontKey() {
-        if(begin == null) {
+        if (begin == null) {
             return null;
         }
         return begin.key;
@@ -29,10 +28,11 @@ public class KeyValueList {
 
     /**
      * Returns the first element in the list
+     *
      * @return The first element
      */
     public String frontValue() {
-        if(begin == null) {
+        if (begin == null) {
             return null;
         }
         return begin.value;
@@ -41,6 +41,7 @@ public class KeyValueList {
 
     /**
      * Checks whether the list is empty
+     *
      * @return True if the list is empty
      */
     public boolean empty() {
@@ -49,20 +50,23 @@ public class KeyValueList {
 
     /**
      * Checks whether the list contains an element with given key
+     *
      * @param key the key of an element to check
      * @return True if an element with given key contains in the list
      */
-    public boolean contains(String key) {
+    public boolean contains(@NotNull String key) {
         return findByKey(key) != null;
     }
 
-    /** Returns an element with given key
+    /**
+     * Returns an element with given key
+     *
      * @param key the key of an element to find
      * @return An element if it is in the list, null otherwise
      */
-    public String get(String key) {
+    public String get(@NotNull String key) {
         var foundNode = findByKey(key);
-        if(foundNode != null) {
+        if (foundNode != null) {
             return foundNode.value;
         } else {
             return null;
@@ -71,11 +75,12 @@ public class KeyValueList {
 
     /**
      * Puts the element with given key and returns previous element
-     * @param key the key ot the element
+     *
+     * @param key   the key ot the element
      * @param value the element to put
      * @return A previous element if table contained an element with given key, null otherwise
      */
-    public String put(String key, String value) {
+    public String put(@NotNull String key, String value) {
         var foundNode = findByKey(key);
         if (foundNode == null) {
             begin = new Node(key, value, begin);
@@ -86,31 +91,33 @@ public class KeyValueList {
         return previousValue;
     }
 
-    /** Removes an element with given key
+    /**
+     * Removes an element with given key
+     *
      * @param key the key of an element to remove
      * @return An element with given key if an element with this key contained in the list, null otherwise
      */
-    public String remove(String key) {
+    public String remove(@NotNull String key) {
         var valueByKey = get(key);
-        if(valueByKey == null) {
-            return  null;
+        if (valueByKey == null) {
+            return null;
         }
         begin = removeByKey(key, begin);
         return valueByKey;
     }
 
-    private Node removeByKey(String key, Node list) {
-        if(list == null) {
+    private Node removeByKey(@NotNull String key, Node list) {
+        if (list == null) {
             return null;
         }
-        if(key.equals(list.key)) {
+        if (key.equals(list.key)) {
             return list.next;
         }
         list.next = removeByKey(key, list.next);
         return list;
     }
 
-    private Node findByKey(String key) {
+    private Node findByKey(@NotNull String key) {
         var currentNode = begin;
         while (currentNode != null && !key.equals(currentNode.key)) {
             currentNode = currentNode.next;
@@ -119,11 +126,11 @@ public class KeyValueList {
     }
 
     private class Node {
-        public Node next;
-        public String key;
-        public String value;
+        private Node next;
+        private @NotNull String key;
+        private String value;
 
-        Node(String key, String value, Node next) {
+        Node(@NotNull String key, String value, Node next) {
             this.key = key;
             this.value = value;
             this.next = next;

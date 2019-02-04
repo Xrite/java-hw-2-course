@@ -1,17 +1,135 @@
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 import java.util.HashMap;
 
 /** A data structure that implements a set of strings using tree-like finite automaton */
 public class Trie {
+    private int size;
+    private Node root;
+
     public Trie() {
         size = 0;
         root = new Node();
     }
 
+    /**
+     * Adds a string into the trie
+     *
+     * @param element a string to add into the trie
+     * @return True if the trie did not contain the given string, false otherwise
+     */
+    public boolean add(@NotNull String element) {
+        if (contains(element)) {
+            return false;
+        }
+        size++;
+        var currentNode = root;
+        for (char c : element.toCharArray()) {
+            if (currentNode.getTransition(c) == null) {
+                currentNode.addTransition(c);
+            }
+            currentNode.terminalSubtreeSum++;
+            currentNode = currentNode.getTransition(c);
+        }
+        currentNode.terminal = true;
+        currentNode.terminalSubtreeSum++;
+        return true;
+    }
+
+    /**
+     * Checks whether a string contains in the trie
+     *
+     * @param element a string to check
+     * @return True if the given string contains in the trie
+     */
+    public boolean contains(@NotNull String element) {
+        var currentnode = root;
+        for (char c : element.toCharArray()) {
+            if (currentnode.getTransition(c) == null) {
+                return false;
+            }
+            currentnode = currentnode.getTransition(c);
+        }
+        return currentnode.terminal;
+    }
+
+    /**
+     * Removes a string from the trie
+     *
+     * @param element a string to remove
+     * @return true if the string was in the trie, false otherwise
+     */
+    public boolean remove(@NotNull String element) {
+        if (!contains(element)) {
+            return false;
+        }
+        size--;
+        var currentNode = root;
+        currentNode.terminalSubtreeSum--;
+        for (char c : element.toCharArray()) {
+            var parent = currentNode;
+            currentNode = currentNode.getTransition(c);
+            currentNode.terminalSubtreeSum--;
+            if (currentNode.terminalSubtreeSum == 0) {
+                parent.removeTransition(c);
+                return true;
+            }
+        }
+        currentNode.terminal = false;
+        return true;
+    }
+
+    /** Returns a number of strings in the trie */
+    public int size() {
+        return size;
+    }
+
+    /**
+     * Counts a number of strings in the trie starts with the given prefix
+     *
+     * @param prefix a prefix
+     */
+    public int howManyStartWithPrefix(@NotNull String prefix) {
+        var currentnode = root;
+        for (char c : prefix.toCharArray()) {
+            if (currentnode.getTransition(c) == null) {
+                return 0;
+            }
+            currentnode = currentnode.getTransition(c);
+        }
+        return currentnode.terminalSubtreeSum;
+    }
+
+    /**
+     * Writes the trie into the OutputStream
+     *
+     * @throws IOException
+     */
+    public void serialize(OutputStream out) throws IOException {
+        try (var dataOut = new DataOutputStream(out)) {
+            dataOut.writeInt(size);
+            root.serialize(dataOut);
+        }
+    }
+
+    /**
+     * Reads the trie from the InputStream
+     *
+     * @throws IOException
+     */
+    public void deserialize(InputStream in) throws IOException {
+        try (var dataIn = new DataInputStream(in)) {
+            size = dataIn.readInt();
+            root = new Node();
+            root.deserialize(dataIn);
+        }
+    }
+
     private class Node {
         private boolean terminal = false;
         private int terminalSubtreeSum = 0;
-        private HashMap<Character, Node> transition;
+        private HashMap<Character, Node> transition = new HashMap<Character, Node>();
 
         private Node getTransition(char c) {
             return transition.get(c);
@@ -48,116 +166,6 @@ public class Trie {
                 child.deserialize(in);
                 transition.put(edge, child);
             }
-        }
-    }
-
-    private int size;
-    private Node root;
-
-    /**
-     * Adds a string into the trie
-     * @param element a string to add into the trie
-     * @return True if the trie did not contain the given string, false otherwise
-     */
-    public boolean add(String element) {
-        if(contains(element)) {
-            return false;
-        }
-        size++;
-        var currentNode = root;
-        for (char c: element.toCharArray()) {
-            if (currentNode.getTransition(c) == null) {
-                currentNode.addTransition(c);
-            }
-            currentNode.terminalSubtreeSum++;
-            currentNode = currentNode.getTransition(c);
-        }
-        currentNode.terminal = true;
-        currentNode.terminalSubtreeSum++;
-        return true;
-    }
-
-    /**
-     * Checks whether a string contains in the trie
-     * @param element a string to check
-     * @return True if the given string contains in the trie
-     */
-    public boolean contains(String element) {
-        var currentnode = root;
-        for (char c: element.toCharArray()) {
-            if (currentnode.getTransition(c) == null) {
-                return false;
-            }
-            currentnode = currentnode.getTransition(c);
-        }
-        return currentnode.terminal;
-    }
-
-    /**
-     * Removes a string from the trie
-     * @param element a string to remove
-     * @return true if the string was in the trie, false otherwise
-     */
-    public boolean remove(String element) {
-        if(!contains(element)) {
-            return false;
-        }
-        size--;
-        var currentNode = root;
-        currentNode.terminalSubtreeSum--;
-        for (char c: element.toCharArray()) {
-            var parent = currentNode;
-            currentNode = currentNode.getTransition(c);
-            currentNode.terminalSubtreeSum--;
-            if(currentNode.terminalSubtreeSum == 0) {
-                parent.removeTransition(c);
-                return true;
-            }
-        }
-        currentNode.terminal = false;
-        return true;
-    }
-
-    /** Returns a number of strings in the trie */
-    public int size() {
-        return size;
-    }
-
-    /**
-     * Counts a number of strings in the trie starts with the given prefix
-     * @param prefix a prefix
-     */
-    public int howManyStartWithPrefix(String prefix) {
-        var currentnode = root;
-        for (char c: prefix.toCharArray()) {
-            if (currentnode.getTransition(c) == null) {
-                return 0;
-            }
-            currentnode = currentnode.getTransition(c);
-        }
-        return currentnode.terminalSubtreeSum;
-    }
-
-    /**
-     * Writes the trie into the OutputStream
-     * @throws IOException
-     */
-    public void serialize(OutputStream out) throws IOException {
-        try(var dataOut = new DataOutputStream(out)) {
-            dataOut.writeInt(size);
-            root.serialize(dataOut);
-        }
-    }
-
-    /**
-     * Reads the trie from the InputStream
-     * @throws IOException
-     */
-    public void deserialize(InputStream in) throws  IOException {
-        try(var dataIn = new DataInputStream(in)) {
-            size = dataIn.readInt();
-            root = new Node();
-            root.deserialize(dataIn);
         }
     }
 }

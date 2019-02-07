@@ -3,20 +3,17 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class TrieTest {
+    private String[] simpleStrings = {"aba", "caba", "abab", "abacaba", "abracadabra", "baca", ""};
 
-    Trie simpleTrie() {
+    private Trie simpleTrie() {
         var trie = new Trie();
-        trie.add("aba");
-        trie.add("caba");
-        trie.add("abab");
-        trie.add("abacaba");
-        trie.add("abracadabra");
-        trie.add("baca");
-        trie.add("");
+        trie.addAll(Arrays.asList(simpleStrings));
         return trie;
     }
 
@@ -100,6 +97,14 @@ class TrieTest {
         assertEquals(1, simple.size());
         simple.remove("");
         assertEquals(0, simple.size());
+        simple.add("aba");
+        assertEquals(1, simple.size());
+        simple.add("abab");
+        assertEquals(2, simple.size());
+        simple.add("aba");
+        assertEquals(2, simple.size());
+        simple.add("caba");
+        assertEquals(3, simple.size());
     }
 
     @Test
@@ -115,27 +120,44 @@ class TrieTest {
         assertEquals(3, simple.howManyStartWithPrefix("aba"));
     }
 
-    void checkId(Trie trie, String[] strings) throws IOException {
+    void checkIdentity(Trie trie) throws IOException {
         var output = new ByteArrayOutputStream();
         trie.serialize(output);
         var input = new ByteArrayInputStream(output.toByteArray());
         var newTrie = new Trie();
         newTrie.deserialize(input);
-        for(var string : strings) {
-            assertEquals(trie.contains(string), newTrie.contains(string));
-        }
+        assertEquals(trie, newTrie);
     }
 
     @Test
-    void serialize() throws IOException {
+    void serializeEmpty() throws IOException {
         var empty = new Trie();
-        checkId(empty, new String[0]);
-        var simple = simpleTrie();
-        String[] simpleStrings = {"aba", "caba", "abab", "abacaba", "abracadabra", "baca", ""};
-        checkId(simple, simpleStrings);
+        checkIdentity(empty);
     }
 
     @Test
-    void deserialize() {
+    void serializeNotEmpty() throws IOException {
+        var simple = simpleTrie();
+        checkIdentity(simple);
+    }
+
+    @Test
+    void equals() {
+        var first = new Trie();
+        var second = new Trie();
+        assertNotEquals(first, null);
+        assertEquals(first, second);
+        for(var string : simpleStrings) {
+            first.add(string);
+            assertNotEquals(first, second);
+            second.add(string);
+            assertEquals(first, second);
+        }
+        second = new Trie();
+        for(var string : simpleStrings) {
+            assertNotEquals(first, second);
+            second.add(string);
+        }
+        assertEquals(first, second);
     }
 }

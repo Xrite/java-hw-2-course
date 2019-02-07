@@ -24,3 +24,7 @@ hs_err_pid*
 
 /*/.idea/workspace.xml
 /*/.idea/uiDesigner.xml
+/*/.gradle/
+/*/build/
+/*/out/
+!/*/gradle/wrapper/*.jar

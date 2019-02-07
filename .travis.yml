@@ -1,1 +1,8 @@
-
+language: java
+os:
+- linux
+env:
+- PROJECT_DIR=1-HashTable
+- PROJECT_DIR=2-Trie
+- PROJECT_DIR=3-MyTreeSet
+script: cd $PROJECT_DIR && ./gradlew check

@@ -1,0 +1,7 @@
+language: java
+jdk: oraclejdk11
+os:
+- linux
+env:
+- PROJECT_DIR=2-Trie
+script: cd $PROJECT_DIR && ./gradlew check

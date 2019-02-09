@@ -1,26 +1,26 @@
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Objects;
 
 /** A data structure that implements a set of strings using tree-like finite automaton */
-public class Trie extends AbstractSet<String> implements Serializable, Set<String> {
+public class Trie implements Serializable, UniterableSet<String> {
     private int size = 0;
     private @NotNull Node root = new Node();
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Trie)) {
-            return false;
-        }
-        if (o == null) {
-            return false;
-        }
-        var other = (Trie) o;
-        if (other.size == size && Objects.equals(other.root, root)) {
-            return true;
-        }
-        return false;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Trie trie = (Trie) o;
+        return size == trie.size &&
+                root.equals(trie.root);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(size, root);
     }
 
     /**
@@ -88,17 +88,6 @@ public class Trie extends AbstractSet<String> implements Serializable, Set<Strin
         }
         currentNode.terminal = false;
         return true;
-    }
-
-    /**
-     * Iterator is unsupported
-     *
-     * @throws UnsupportedOperationException
-     */
-    @NotNull
-    @Override
-    public Iterator<String> iterator() {
-        throw new UnsupportedOperationException();
     }
 
     /** Returns a number of strings in the trie */
@@ -189,17 +178,17 @@ public class Trie extends AbstractSet<String> implements Serializable, Set<Strin
 
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof Node)) {
-                return false;
-            }
-            if (o == null) {
-                return false;
-            }
-            var other = (Node) o;
-            if (other.terminal != terminal || other.terminalSubtreeSum != terminalSubtreeSum || !transition.equals(other.transition)) {
-                return false;
-            }
-            return true;
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Node node = (Node) o;
+            return terminal == node.terminal &&
+                    terminalSubtreeSum == node.terminalSubtreeSum &&
+                    transition.equals(node.transition);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(terminal, terminalSubtreeSum, transition);
         }
     }
 }

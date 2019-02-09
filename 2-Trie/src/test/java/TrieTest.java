@@ -2,8 +2,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -82,20 +82,10 @@ class TrieTest {
     @Test
     void size() {
         var simple = simpleTrie();
-        assertEquals(7, simple.size());
-        simple.remove("aba");
-        assertEquals(6, simple.size());
-        simple.remove("caba");
-        assertEquals(5, simple.size());
-        simple.remove("abab");
-        assertEquals(4, simple.size());
-        simple.remove("abacaba");
-        assertEquals(3, simple.size());
-        simple.remove("abracadabra");
-        assertEquals(2, simple.size());
-        simple.remove("baca");
-        assertEquals(1, simple.size());
-        simple.remove("");
+        for (int i = 7; i > 0; i--) {
+            assertEquals(i, simple.size());
+            simple.remove(simpleStrings[i - 1]);
+        }
         assertEquals(0, simple.size());
         simple.add("aba");
         assertEquals(1, simple.size());
@@ -142,19 +132,48 @@ class TrieTest {
     }
 
     @Test
+    void checkSerializeEmpty() throws IOException {
+        var empty = new Trie();
+        var output = new ByteArrayOutputStream();
+        var dataOutput = new DataOutputStream(output);
+        dataOutput.writeInt(0);
+        dataOutput.writeBoolean(false);
+        dataOutput.writeInt(0);
+        dataOutput.writeInt(0);
+        var trieOutput = new ByteArrayOutputStream();
+        empty.serialize(trieOutput);
+        assertEquals(trieOutput.toString(), output.toString());
+    }
+
+    @Test
+    void checkDeserializeEmpty() throws IOException {
+        var empty = new Trie();
+        var output = new ByteArrayOutputStream();
+        var dataOutput = new DataOutputStream(output);
+        dataOutput.writeInt(0);
+        dataOutput.writeBoolean(false);
+        dataOutput.writeInt(0);
+        dataOutput.writeInt(0);
+        var input = new ByteArrayInputStream(output.toByteArray());
+        var readTrie = new Trie();
+        readTrie.deserialize(input);
+        assertEquals(empty, readTrie);
+    }
+
+    @Test
     void equals() {
         var first = new Trie();
         var second = new Trie();
         assertNotEquals(first, null);
         assertEquals(first, second);
-        for(var string : simpleStrings) {
+        for (var string : simpleStrings) {
             first.add(string);
             assertNotEquals(first, second);
             second.add(string);
             assertEquals(first, second);
         }
         second = new Trie();
-        for(var string : simpleStrings) {
+        for (var string : simpleStrings) {
             assertNotEquals(first, second);
             second.add(string);
         }

@@ -267,10 +267,10 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
 
     private class TreapIterator implements Iterator<E> {
         private Node pointer;
-        private @NotNull InvalidationMark iteratorMachineBroke;
+        private @NotNull InvalidationMark invalidationMark;
 
         private TreapIterator() {
-            iteratorMachineBroke = data.invalidationMark;
+            invalidationMark = data.invalidationMark;
             pointer = data.root;
             if (pointer != null) {
                 pointer.adjustToDirection(reversed);
@@ -301,7 +301,7 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
 
         @Override
         public boolean hasNext() {
-            if (iteratorMachineBroke.invalid) {
+            if (invalidationMark.invalid) {
                 throw new ConcurrentModificationException();
             }
             return pointer != null;
@@ -309,7 +309,7 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
 
         @Override
         public E next() {
-            if (iteratorMachineBroke.invalid) {
+            if (invalidationMark.invalid) {
                 throw new ConcurrentModificationException();
             }
             Node previous = pointer;

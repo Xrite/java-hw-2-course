@@ -82,7 +82,7 @@ class TrieTest {
     @Test
     void size() {
         var simple = simpleTrie();
-        for (int i = 7; i > 0; i--) {
+        for (int i = simpleStrings.length; i > 0; i--) {
             assertEquals(i, simple.size());
             simple.remove(simpleStrings[i - 1]);
         }
@@ -146,6 +146,33 @@ class TrieTest {
     }
 
     @Test
+    void checkSerializeNotEmpty() throws IOException {
+        var trie = new Trie();
+        trie.add("aba");
+        var output = new ByteArrayOutputStream();
+        var dataOutput = new DataOutputStream(output);
+        dataOutput.writeInt(1);
+        dataOutput.writeBoolean(false);
+        dataOutput.writeInt(1);
+        dataOutput.writeInt(1);
+        dataOutput.writeChar('a');
+        dataOutput.writeBoolean(false);
+        dataOutput.writeInt(1);
+        dataOutput.writeInt(1);
+        dataOutput.writeChar('b');
+        dataOutput.writeBoolean(false);
+        dataOutput.writeInt(1);
+        dataOutput.writeInt(1);
+        dataOutput.writeChar('a');
+        dataOutput.writeBoolean(true);
+        dataOutput.writeInt(1);
+        dataOutput.writeInt(0);
+        var trieOutput = new ByteArrayOutputStream();
+        trie.serialize(trieOutput);
+        assertEquals(trieOutput.toString(), output.toString());
+    }
+
+    @Test
     void checkDeserializeEmpty() throws IOException {
         var empty = new Trie();
         var output = new ByteArrayOutputStream();
@@ -158,6 +185,34 @@ class TrieTest {
         var readTrie = new Trie();
         readTrie.deserialize(input);
         assertEquals(empty, readTrie);
+    }
+
+    @Test
+    void checkDeserializeNotEmpty() throws IOException {
+        var trie = new Trie();
+        trie.add("cab");
+        var output = new ByteArrayOutputStream();
+        var dataOutput = new DataOutputStream(output);
+        dataOutput.writeInt(1);
+        dataOutput.writeBoolean(false);
+        dataOutput.writeInt(1);
+        dataOutput.writeInt(1);
+        dataOutput.writeChar('c');
+        dataOutput.writeBoolean(false);
+        dataOutput.writeInt(1);
+        dataOutput.writeInt(1);
+        dataOutput.writeChar('a');
+        dataOutput.writeBoolean(false);
+        dataOutput.writeInt(1);
+        dataOutput.writeInt(1);
+        dataOutput.writeChar('b');
+        dataOutput.writeBoolean(true);
+        dataOutput.writeInt(1);
+        dataOutput.writeInt(0);
+        var input = new ByteArrayInputStream(output.toByteArray());
+        var readTrie = new Trie();
+        readTrie.deserialize(input);
+        assertEquals(trie, readTrie);
     }
 
     @Test
@@ -178,5 +233,23 @@ class TrieTest {
             second.add(string);
         }
         assertEquals(first, second);
+    }
+
+    @Test
+    void removeAll() {
+        var trie = simpleTrie();
+        trie.removeAll(Arrays.asList(simpleStrings));
+        assertEquals(0, trie.size());
+    }
+
+    @Test
+    void addAll() {
+        var empty = new Trie();
+        var correct = new Trie();
+        for(var string : simpleStrings) {
+            correct.add(string);
+        }
+        empty.addAll(Arrays.asList(simpleStrings));
+        assertEquals(correct, empty);
     }
 }

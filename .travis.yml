@@ -2,4 +2,6 @@ language: java
 jdk: oraclejdk11
 os:
 - linux
+env:
+- PROJECT_DIR=4-DB
 script: cd $PROJECT_DIR && ./gradlew check

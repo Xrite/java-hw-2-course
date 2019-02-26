@@ -1,6 +1,8 @@
 package ru.hse.aabukov.mytreeset;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.api.function.ThrowingSupplier;
 
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
@@ -21,8 +23,9 @@ class TreapTest {
     @Test
     void testNotComparableObjects() {
         var objects = new Treap<Object>();
-        assertDoesNotThrow(() -> objects.add(new Object()));
-        assertThrows(ClassCastException.class, () -> objects.add(new Object()));
+        Executable newObject = () -> objects.add(new Object());
+        assertDoesNotThrow(newObject);
+        assertThrows(IllegalArgumentException.class, newObject);
     }
 
     @Test
@@ -34,7 +37,6 @@ class TreapTest {
             assertEquals(Integer.valueOf(i), it.next());
         }
         assertFalse(it.hasNext());
-        var empty = new Treap<String>();
         assertFalse(it.hasNext());
         assertThrows(NoSuchElementException.class, it::next);
     }
@@ -140,7 +142,7 @@ class TreapTest {
         treap.floor(4);
         assertDoesNotThrow(it::next);
         assertDoesNotThrow(it::hasNext);
-        treap.contains(5);
+        assertTrue(treap.contains(5));
         assertDoesNotThrow(it::next);
         assertDoesNotThrow(it::hasNext);
         treap.first();

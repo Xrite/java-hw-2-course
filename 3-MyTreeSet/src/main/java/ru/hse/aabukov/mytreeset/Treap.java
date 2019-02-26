@@ -1,6 +1,7 @@
 package ru.hse.aabukov.mytreeset;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -17,6 +18,7 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
     /**
      * Works like {@link TreeSet#TreeSet()}
      */
+    @SuppressWarnings("unchecked")
     public Treap() {
         comparator = (Comparator<? super E>) Comparator.naturalOrder();
         data = new CommonData();
@@ -53,10 +55,7 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
      */
     @Override
     public int size() {
-        if (data.root == null) {
-            return 0;
-        }
-        return data.root.size;
+        return data.root == null ? 0 : data.root.size;
     }
 
     private void invalidate() {
@@ -86,6 +85,7 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
      * Works like {@link TreeSet#first()}
      */
     @Override
+    @Nullable
     public E first() {
         var it = iterator();
         if (!it.hasNext()) {
@@ -102,16 +102,13 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
         return cachedDescendingSet.first();
     }
 
-    /**
-     * Works like {@link TreeSet#lower(Object)}
-     */
-    @Override
-    public E lower(E e) {
+    @Nullable
+    private E lowerBound(@Nullable E e, boolean inclusive) {
         Node node = data.root;
         E candidate = null;
         while (node != null) {
             node.adjustToDirection(reversed);
-            if (comparator.compare(node.value, e) < 0) {
+            if ((comparator.compare(node.value, e) < 0 && !inclusive) || (comparator.compare(node.value, e) <= 0 && inclusive)) {
                 candidate = node.value;
                 node = node.right;
             } else {
@@ -119,32 +116,32 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
             }
         }
         return candidate;
+    }
+
+    /**
+     * Works like {@link TreeSet#lower(Object)}
+     */
+    @Override
+    @Nullable
+    public E lower(@Nullable E e) {
+        return lowerBound(e, false);
     }
 
     /**
      * Works like {@link TreeSet#floor(Object)}
      */
     @Override
-    public E floor(E e) {
-        Node node = data.root;
-        E candidate = null;
-        while (node != null) {
-            node.adjustToDirection(reversed);
-            if (comparator.compare(node.value, e) <= 0) {
-                candidate = node.value;
-                node = node.right;
-            } else {
-                node = node.left;
-            }
-        }
-        return candidate;
+    @Nullable
+    public E floor(@Nullable E e) {
+        return lowerBound(e, true);
     }
 
     /**
      * Works like {@link TreeSet#ceiling(Object)}
      */
     @Override
-    public E ceiling(E e) {
+    @Nullable
+    public E ceiling(@Nullable E e) {
         return cachedDescendingSet.floor(e);
     }
 
@@ -152,7 +149,8 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
      * Works like {@link TreeSet#higher(Object)}
      */
     @Override
-    public E higher(E e) {
+    @Nullable
+    public E higher(@Nullable E e) {
         return cachedDescendingSet.lower(e);
     }
 
@@ -160,7 +158,7 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
      * Works like {@link TreeSet#add(Object)}
      */
     @Override
-    public boolean add(E e) {
+    public boolean add(@Nullable E e) {
         if (contains(e)) {
             return false;
         }
@@ -172,46 +170,61 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
     /**
-     * Works like {@link TreeSet#contains(Object)}
+     * Works like {@link TreeSet#contains(Object)} except it only accepts objects that could be cast to {@code E}
+     *
+     * @throws IllegalArgumentException if the argument can not be cast to {@code E}
      */
     @Override
-    public boolean contains(Object o) {
-        Node node = data.root;
-        while (node != null) {
-            node.adjustToDirection(reversed);
-            if (comparator.compare(node.value, (E) o) < 0) {
-                node = node.right;
-            } else if (comparator.compare(node.value, (E) o) == 0) {
-                return true;
-            } else {
-                node = node.left;
+    @SuppressWarnings("unchecked")
+    public boolean contains(@Nullable Object o) {
+        try {
+            Node node = data.root;
+            while (node != null) {
+                node.adjustToDirection(reversed);
+                if (comparator.compare(node.value, (E) o) < 0) {
+                    node = node.right;
+                } else if (comparator.compare(node.value, (E) o) == 0) {
+                    return true;
+                } else {
+                    node = node.left;
+                }
             }
+            return false;
+        } catch (ClassCastException e) {
+            throw new IllegalArgumentException("Objects that can not be cast to E are not supported");
         }
-        return false;
     }
 
     /**
-     * Works like {@link TreeSet#remove(Object)}
+     * Works like {@link TreeSet#contains(Object)} except it only accepts objects that could be cast to {@code E}
+     *
+     * @throws IllegalArgumentException if the argument can not be cast to {@code E}
      */
     @Override
-    public boolean remove(Object o) {
+    @SuppressWarnings("unchecked")
+    public boolean remove(@Nullable Object o) {
         if (!contains(o)) {
             return false;
         }
-        invalidate();
-        if (comparator.compare(first(), (E) o) == 0) {
-            var splitted = split(data.root, (E) o);
-            data.root = splitted.second;
-        } else {
-            E pred = lower((E) o);
-            var left = split(data.root, pred).first;
-            var right = split(data.root, (E) o).second;
-            data.root = merge(left, right);
+        try {
+            invalidate();
+            if (comparator.compare(first(), (E) o) == 0) {
+                var splitted = split(data.root, (E) o);
+                data.root = splitted.second;
+            } else {
+                E pred = lower((E) o);
+                var left = split(data.root, pred).first;
+                var right = split(data.root, (E) o).second;
+                data.root = merge(left, right);
+            }
+            return true;
+        } catch (ClassCastException e) {
+            throw new IllegalArgumentException("Objects that can not be cast to E are not supported");
         }
-        return true;
     }
 
-    private Node merge(Node left, Node right) {
+    @Nullable
+    private Node merge(@Nullable Node left, @Nullable Node right) {
         if (left == null) {
             return right;
         }
@@ -237,7 +250,8 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
         }
     }
 
-    private Pair split(Node node, E element) {
+    @NotNull
+    private Pair split(@Nullable Node node, @Nullable E element) {
         if (node == null) {
             return new Pair(null, null);
         }
@@ -266,7 +280,7 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
     private class TreapIterator implements Iterator<E> {
-        private Node pointer;
+        private @Nullable Node pointer;
         private @NotNull InvalidationMark invalidationMark;
 
         private TreapIterator() {
@@ -281,6 +295,7 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
             }
         }
 
+        @Nullable
         private Node tryNext(@NotNull Node node) {
             node.adjustToDirection(reversed);
             if (node.right != null) {
@@ -308,6 +323,7 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
         }
 
         @Override
+        @Nullable
         public E next() {
             if (invalidationMark.invalid) {
                 throw new ConcurrentModificationException();
@@ -323,26 +339,21 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
 
     private class CommonData {
         private @NotNull Random rand = new Random();
-        private Node root;
+        private @Nullable Node root;
         private @NotNull InvalidationMark invalidationMark = new InvalidationMark();
     }
 
     private class Node {
-        E value;
-        private Node left;
-        private Node right;
-        private Node parent;
+        private @Nullable E value;
+        private @Nullable Node left;
+        private @Nullable Node right;
+        private @Nullable Node parent;
         private int priority;
         private int size;
         private int direction; // -1 if left child, 1 if right child, 0 if root
         private boolean reversedNode;
 
-        Node() {
-            priority = data.rand.nextInt();
-            size = 1;
-        }
-
-        Node(E value) {
+        Node(@Nullable E value) {
             priority = data.rand.nextInt();
             this.value = value;
             size = 1;
@@ -374,10 +385,10 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
     private class Pair {
-        private Node first;
-        private Node second;
+        private @Nullable Node first;
+        private @Nullable Node second;
 
-        Pair(Node first, Node second) {
+        Pair(@Nullable Node first, @Nullable Node second) {
             this.first = first;
             this.second = second;
         }

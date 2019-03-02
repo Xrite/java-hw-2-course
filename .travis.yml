@@ -4,4 +4,5 @@ os:
 - linux
 env:
 - PROJECT_DIR=2-Trie
+- PROJECT_DIR=1-HashTable
 script: cd $PROJECT_DIR && ./gradlew check

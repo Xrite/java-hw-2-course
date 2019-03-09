@@ -98,6 +98,7 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
      * Works like {@link TreeSet#last()}
      */
     @Override
+    @Nullable
     public E last() {
         return cachedDescendingSet.first();
     }

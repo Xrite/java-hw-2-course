@@ -3,12 +3,10 @@ package ru.hse.aabukov.mytreeset;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
-import org.junit.jupiter.api.function.ThrowingSupplier;
 
 import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
-import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,7 +14,7 @@ class TreapTest {
 
     Treap<Integer> numbers(int bound) {
         var treap = new Treap<Integer>();
-        for(int i = 0; i < bound; i++) {
+        for (int i = 0; i < bound; i++) {
             treap.add(i);
         }
         return treap;
@@ -25,20 +23,20 @@ class TreapTest {
     @Test
     void testComparator() {
         var treap = new Treap<Integer>(Comparator.naturalOrder());
-        for(int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; i++) {
             treap.add(i);
         }
         var iterator = treap.iterator();
-        for(int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; i++) {
             assertTrue(iterator.hasNext());
-            assertEquals((Integer)i, iterator.next());
+            assertEquals((Integer) i, iterator.next());
         }
     }
 
     @Test
     void contains() {
         var treap = numbers(10);
-        for(int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; i++) {
             assertTrue(treap.contains(i));
         }
         assertFalse(treap.contains(10));
@@ -66,7 +64,7 @@ class TreapTest {
     void iterator() {
         var treap = numbers(10);
         var it = treap.iterator();
-        for(int i = 0; i < 10 ; i++) {
+        for (int i = 0; i < 10; i++) {
             assertTrue(it.hasNext());
             assertEquals(Integer.valueOf(i), it.next());
         }
@@ -85,7 +83,7 @@ class TreapTest {
     void descendingIterator() {
         var simple = numbers(10);
         var it = simple.descendingIterator();
-        for(int i = 9; i >= 0; i--) {
+        for (int i = 9; i >= 0; i--) {
             assertTrue(it.hasNext());
             assertEquals(Integer.valueOf(i), it.next());
         }

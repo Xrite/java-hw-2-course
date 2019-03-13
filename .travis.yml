@@ -3,5 +3,5 @@ jdk: oraclejdk11
 os:
 - linux
 env:
-- PROJECT_DIR=3-MyTreeSet
+- PROJECT_DIR=5-Reflector
 script: cd $PROJECT_DIR && ./gradlew check

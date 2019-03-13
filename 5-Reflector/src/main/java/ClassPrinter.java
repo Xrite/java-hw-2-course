@@ -269,8 +269,7 @@ public class ClassPrinter {
     public static String printStructure(@NotNull Class<?> clazz) {
         replaceFrom = clazz;
         replaceTo = clazz.getSimpleName();
-        String code = printClass(clazz, clazz.getSimpleName(), 0, true);
-        return code;
+        return printClass(clazz, clazz.getSimpleName(), 0, true);
     }
 
     /**
@@ -281,8 +280,7 @@ public class ClassPrinter {
     public static String printStructure(@NotNull Class<?> clazz, @NotNull String name) {
         replaceFrom = clazz;
         replaceTo = name;
-        String code = printClass(clazz, name, 0, true);
-        return code;
+        return printClass(clazz, name, 0, true);
     }
 
     /**

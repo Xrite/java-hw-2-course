@@ -10,7 +10,7 @@ import java.util.*;
  * O(log n) time. Note that it does not contain some methods.
  */
 public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
-    private @NotNull Comparator<? super E> comparator;
+    private @Nullable Comparator<? super E> comparator = null;
     private boolean reversed;
     private @NotNull CommonData data;
     private @NotNull Treap<E> cachedDescendingSet;
@@ -18,11 +18,15 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
     /**
      * Works like {@link TreeSet#TreeSet()}
      */
-    @SuppressWarnings("unchecked")
     public Treap() {
-        comparator = (Comparator<? super E>) Comparator.naturalOrder();
         data = new CommonData();
-        cachedDescendingSet = new Treap<>(comparator, data, this);
+        cachedDescendingSet = new Treap<>(data, this);
+    }
+
+    private Treap(@NotNull CommonData data, @NotNull Treap<E> pairSet) {
+        reversed = true;
+        this.data = data;
+        cachedDescendingSet = pairSet;
     }
 
     /**
@@ -39,6 +43,15 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
         reversed = true;
         this.data = data;
         cachedDescendingSet = pairSet;
+    }
+
+    @SuppressWarnings("unchecked")
+    private int compare(E a, Object b) {
+        if (comparator == null) {
+            return (reversed ? 1 : -1) * ((Comparable<? super E>) b).compareTo(a);
+        } else {
+            return comparator.compare(a, (E) b);
+        }
     }
 
     /**
@@ -104,12 +117,12 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
     @Nullable
-    private E lowerBound(@Nullable E e, boolean inclusive) {
+    private E lowerBound(@Nullable Object e, boolean inclusive) {
         Node node = data.root;
         E candidate = null;
         while (node != null) {
             node.adjustToDirection(reversed);
-            if ((comparator.compare(node.value, e) < 0 && !inclusive) || (comparator.compare(node.value, e) <= 0 && inclusive)) {
+            if ((compare(node.value, e) < 0 && !inclusive) || (compare(node.value, e) <= 0 && inclusive)) {
                 candidate = node.value;
                 node = node.right;
             } else {
@@ -171,57 +184,43 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
     /**
-     * Works like {@link TreeSet#contains(Object)} except it only accepts objects that could be cast to {@code E}
-     *
-     * @throws IllegalArgumentException if the argument can not be cast to {@code E}
+     * Works like {@link TreeSet#contains(Object)}
      */
     @Override
-    @SuppressWarnings("unchecked")
     public boolean contains(@Nullable Object o) {
-        try {
-            Node node = data.root;
-            while (node != null) {
-                node.adjustToDirection(reversed);
-                if (comparator.compare(node.value, (E) o) < 0) {
-                    node = node.right;
-                } else if (comparator.compare(node.value, (E) o) == 0) {
-                    return true;
-                } else {
-                    node = node.left;
-                }
+        Node node = data.root;
+        while (node != null) {
+            node.adjustToDirection(reversed);
+            if (compare(node.value, o) < 0) {
+                node = node.right;
+            } else if (compare(node.value, o) == 0) {
+                return true;
+            } else {
+                node = node.left;
             }
-            return false;
-        } catch (ClassCastException e) {
-            throw new IllegalArgumentException("Objects that can not be cast to E are not supported");
         }
+        return false;
     }
 
     /**
-     * Works like {@link TreeSet#contains(Object)} except it only accepts objects that could be cast to {@code E}
-     *
-     * @throws IllegalArgumentException if the argument can not be cast to {@code E}
+     * Works like {@link TreeSet#contains(Object)}
      */
     @Override
-    @SuppressWarnings("unchecked")
     public boolean remove(@Nullable Object o) {
         if (!contains(o)) {
             return false;
         }
-        try {
-            invalidate();
-            if (comparator.compare(first(), (E) o) == 0) {
-                var splitted = split(data.root, (E) o);
-                data.root = splitted.second;
-            } else {
-                E pred = lower((E) o);
-                var left = split(data.root, pred).first;
-                var right = split(data.root, (E) o).second;
-                data.root = merge(left, right);
-            }
-            return true;
-        } catch (ClassCastException e) {
-            throw new IllegalArgumentException("Objects that can not be cast to E are not supported");
+        invalidate();
+        if (compare(first(), o) == 0) {
+            var splitted = split(data.root, o);
+            data.root = splitted.second;
+        } else {
+            E pred = lowerBound(o, false);
+            var left = split(data.root, pred).first;
+            var right = split(data.root, o).second;
+            data.root = merge(left, right);
         }
+        return true;
     }
 
     @Nullable
@@ -252,12 +251,12 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
     }
 
     @NotNull
-    private Pair split(@Nullable Node node, @Nullable E element) {
+    private Pair split(@Nullable Node node, @Nullable Object element) {
         if (node == null) {
             return new Pair(null, null);
         }
         node.adjustToDirection(reversed);
-        if (comparator.compare(node.value, element) <= 0) {
+        if (compare(node.value, element) <= 0) {
             var splitted = split(node.right, element);
             node.right = splitted.first;
             if (node.right != null) {

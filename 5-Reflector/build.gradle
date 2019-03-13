@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+}
+
+group 'reflector'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 11
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.google.googlejavaformat:google-java-format:1.6'
+    compile('org.jetbrains:annotations:16.0.2')
+    compile('net.openhft:compiler:2.3.4')
+    testCompile('org.junit.jupiter:junit-jupiter-api:5.3.2')
+    testRuntime('org.junit.jupiter:junit-jupiter-engine:5.3.2')
+}
+
+test {
+    useJUnitPlatform()
+}
+

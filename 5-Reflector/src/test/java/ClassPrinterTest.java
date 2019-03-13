@@ -11,11 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ClassPrinterTest {
-
-    void adaf() {
-        Reflector.diffClasses(ComplexClass.class, ComplexClass2.class);
-    }
-
     @Test
     void diffSimpleInterfaces() {
         List<Set<String>> sets = ClassPrinter.diffClasses(SimpleInterface1.class, SimpleInterface2.class);

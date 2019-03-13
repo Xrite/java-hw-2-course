@@ -1,9 +1,11 @@
 package ru.hse.aabukov.mytreeset;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.function.ThrowingSupplier;
 
+import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
 import java.util.TreeSet;
@@ -21,11 +23,43 @@ class TreapTest {
     }
 
     @Test
+    void testComparator() {
+        var treap = new Treap<Integer>(Comparator.naturalOrder());
+        for(int i = 0; i < 10; i++) {
+            treap.add(i);
+        }
+        var iterator = treap.iterator();
+        for(int i = 0; i < 10; i++) {
+            assertTrue(iterator.hasNext());
+            assertEquals((Integer)i, iterator.next());
+        }
+    }
+
+    @Test
+    void contains() {
+        var treap = numbers(10);
+        for(int i = 0; i < 10; i++) {
+            assertTrue(treap.contains(i));
+        }
+        assertFalse(treap.contains(10));
+        assertThrows(ClassCastException.class, () -> treap.contains("abab"));
+        assertThrows(ClassCastException.class, () -> treap.contains(new Object()));
+        Object object = (Object) 1;
+        assertTrue(treap.contains(object));
+        assertTrue(treap.contains(new Comparable<Integer>() {
+            @Override
+            public int compareTo(@NotNull Integer o) {
+                return Integer.valueOf(2).compareTo(o);
+            }
+        }));
+    }
+
+    @Test
     void testNotComparableObjects() {
         var objects = new Treap<Object>();
         Executable newObject = () -> objects.add(new Object());
         assertDoesNotThrow(newObject);
-        assertThrows(IllegalArgumentException.class, newObject);
+        assertThrows(ClassCastException.class, newObject);
     }
 
     @Test

@@ -1,6 +1,11 @@
 import java.lang.reflect.Array;
 import java.util.*;
 
+/**
+ * Implements hash map with adding order
+ * @param <K>
+ * @param <V>
+ */
 public class LinkedHashMap<K, V> extends AbstractMap<K, V> {
     private final int INITIAL_CAPACITY = 5;
     private PrimitiveSet<MyMapEntry>[] buckets;
@@ -8,7 +13,7 @@ public class LinkedHashMap<K, V> extends AbstractMap<K, V> {
     private int keysCount = 0;
     private MyMapEntry begin = null;
 
-    LinkedHashMap() {
+    public LinkedHashMap() {
         buckets = (PrimitiveSet<MyMapEntry>[]) Array.newInstance(PrimitiveSet.class, INITIAL_CAPACITY);
         capacity = INITIAL_CAPACITY;
         for (int i = 0; i < INITIAL_CAPACITY; i++) {
@@ -111,7 +116,7 @@ public class LinkedHashMap<K, V> extends AbstractMap<K, V> {
         private MyMapEntry nextEntry;
         private MyMapEntry previousEntry;
 
-        MyMapEntry(K key, V value) {
+        public MyMapEntry(K key, V value) {
             this.key = key;
             this.value = value;
         }
@@ -151,7 +156,7 @@ public class LinkedHashMap<K, V> extends AbstractMap<K, V> {
         E[] container;
         int size;
 
-        PrimitiveSet() {
+        public PrimitiveSet() {
             container = (E[]) new Object[INITIAL_CAPACITY];
             size = 0;
         }

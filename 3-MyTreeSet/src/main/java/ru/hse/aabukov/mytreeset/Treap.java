@@ -15,9 +15,7 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
     private @NotNull CommonData data;
     private @NotNull Treap<E> cachedDescendingSet;
 
-    /**
-     * Works like {@link TreeSet#TreeSet()}
-     */
+    /** Works like {@link TreeSet#TreeSet()} */
     public Treap() {
         data = new CommonData();
         cachedDescendingSet = new Treap<>(data, this);
@@ -29,9 +27,7 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
         cachedDescendingSet = pairSet;
     }
 
-    /**
-     * Works like {@link TreeSet#TreeSet(Comparator)}
-     */
+    /** Works like {@link TreeSet#TreeSet(Comparator)} */
     public Treap(@NotNull Comparator<? super E> comparator) {
         this.comparator = comparator;
         data = new CommonData();
@@ -54,18 +50,14 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
         }
     }
 
-    /**
-     * Works like {@link TreeSet#iterator()}
-     */
+    /** Works like {@link TreeSet#iterator()} */
     @NotNull
     @Override
     public Iterator<E> iterator() {
         return new TreapIterator();
     }
 
-    /**
-     * Works like {@link TreeSet#size()}
-     */
+    /** Works like {@link TreeSet#size()} */
     @Override
     public int size() {
         return data.root == null ? 0 : data.root.size;
@@ -76,27 +68,21 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
         data.invalidationMark = new InvalidationMark();
     }
 
-    /**
-     * Works like {@link TreeSet#descendingIterator()}
-     */
+    /** Works like {@link TreeSet#descendingIterator()} */
     @NotNull
     @Override
     public Iterator<E> descendingIterator() {
         return cachedDescendingSet.iterator();
     }
 
-    /**
-     * Works like {@link TreeSet#descendingSet()}
-     */
+    /** Works like {@link TreeSet#descendingSet() */
     @NotNull
     @Override
     public MyTreeSet<E> descendingSet() {
         return cachedDescendingSet;
     }
 
-    /**
-     * Works like {@link TreeSet#first()}
-     */
+    /** Works like {@link TreeSet#first()} */
     @Override
     @Nullable
     public E first() {
@@ -107,9 +93,7 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
         return it.next();
     }
 
-    /**
-     * Works like {@link TreeSet#last()}
-     */
+    /** Works like {@link TreeSet#last()} */
     @Override
     @Nullable
     public E last() {
@@ -132,45 +116,35 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
         return candidate;
     }
 
-    /**
-     * Works like {@link TreeSet#lower(Object)}
-     */
+    /** Works like {@link TreeSet#lower(Object)} */
     @Override
     @Nullable
     public E lower(@Nullable E e) {
         return lowerBound(e, false);
     }
 
-    /**
-     * Works like {@link TreeSet#floor(Object)}
-     */
+    /** Works like {@link TreeSet#floor(Object)} */
     @Override
     @Nullable
     public E floor(@Nullable E e) {
         return lowerBound(e, true);
     }
 
-    /**
-     * Works like {@link TreeSet#ceiling(Object)}
-     */
+    /** Works like {@link TreeSet#ceiling(Object)} */
     @Override
     @Nullable
     public E ceiling(@Nullable E e) {
         return cachedDescendingSet.floor(e);
     }
 
-    /**
-     * Works like {@link TreeSet#higher(Object)}
-     */
+    /** Works like {@link TreeSet#higher(Object)} */
     @Override
     @Nullable
     public E higher(@Nullable E e) {
         return cachedDescendingSet.lower(e);
     }
 
-    /**
-     * Works like {@link TreeSet#add(Object)}
-     */
+    /** Works like {@link TreeSet#add(Object)} */
     @Override
     public boolean add(@Nullable E e) {
         if (contains(e)) {
@@ -183,9 +157,7 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
         return true;
     }
 
-    /**
-     * Works like {@link TreeSet#contains(Object)}
-     */
+    /** Works like {@link TreeSet#contains(Object)} */
     @Override
     public boolean contains(@Nullable Object o) {
         Node node = data.root;
@@ -202,9 +174,7 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
         return false;
     }
 
-    /**
-     * Works like {@link TreeSet#contains(Object)}
-     */
+    /** Works like {@link TreeSet#contains(Object)} */
     @Override
     public boolean remove(@Nullable Object o) {
         if (!contains(o)) {
@@ -236,15 +206,15 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
         if (left.priority > right.priority) {
             left.right = merge(left.right, right);
             left.right.parent = left;
-            left.right.direction = 1;
-            left.direction = 0;
+            left.right.direction = Direction.RIGHT;
+            left.direction = Direction.ROOT;
             left.update();
             return left;
         } else {
             right.left = merge(left, right.left);
             right.left.parent = right;
-            right.left.direction = -1;
-            right.direction = 0;
+            right.left.direction = Direction.LEFT;
+            right.direction = Direction.ROOT;
             right.update();
             return right;
         }
@@ -261,9 +231,9 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
             node.right = splitted.first;
             if (node.right != null) {
                 node.right.parent = node;
-                node.right.direction = 1;
+                node.right.direction = Direction.RIGHT;
             }
-            node.direction = 0;
+            node.direction = Direction.ROOT;
             node.update();
             return new Pair(node, splitted.second);
         } else {
@@ -271,11 +241,29 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
             node.left = splitted.second;
             if (node.left != null) {
                 node.left.parent = node;
-                node.left.direction = -1;
+                node.left.direction = Direction.LEFT;
             }
-            node.direction = 0;
+            node.direction = Direction.ROOT;
             node.update();
             return new Pair(splitted.first, node);
+        }
+    }
+
+    private enum Direction {
+        LEFT,
+        RIGHT,
+        ROOT;
+
+        public Direction opposite() {
+            switch (this) {
+                case LEFT:
+                    return RIGHT;
+                case RIGHT:
+                    return LEFT;
+                case ROOT:
+                    return ROOT;
+            }
+            throw new AssertionError("Unknown direcion: " + this);
         }
     }
 
@@ -307,7 +295,7 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
                 }
                 return node;
             }
-            while (node.direction == 1) {
+            while (node.direction == Direction.RIGHT) {
                 node = node.parent;
                 node.adjustToDirection(reversed);
             }
@@ -350,11 +338,12 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
         private @Nullable Node parent;
         private int priority;
         private int size;
-        private int direction; // -1 if left child, 1 if right child, 0 if root
+        private @NotNull Direction direction; // -1 if left child, 1 if right child, 0 if root
         private boolean reversedNode;
 
         Node(@Nullable E value) {
             priority = data.rand.nextInt();
+            direction = Direction.ROOT;
             this.value = value;
             size = 1;
         }
@@ -364,7 +353,7 @@ public class Treap<E> extends AbstractSet<E> implements MyTreeSet<E> {
                 var temp = left;
                 left = right;
                 right = temp;
-                direction *= -1;
+                direction = direction.opposite();
                 reversedNode = isReversed;
             }
         }

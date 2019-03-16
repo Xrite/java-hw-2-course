@@ -7,7 +7,8 @@ import java.util.*;
  * This class converts Class into string and compares two classes.
  */
 public class ClassPrinter {
-    private static @NotNull Class<?> replaceFrom = Object.class; //Just because not null. It will be changed before each operation
+    //Just because not null. It will be changed before each operation
+    private static @NotNull Class<?> replaceFrom = Object.class;
     private static @NotNull String replaceTo = "Object";
 
     private static List<Type> filterNotObject(@NotNull Type[] types) {
@@ -83,10 +84,8 @@ public class ClassPrinter {
         }
         if (type instanceof GenericArrayType) {
             var genericArrayType = (GenericArrayType) type;
-            var builder = new StringBuilder();
-            builder.append(fullName(genericArrayType.getGenericComponentType()));
-            builder.append("[]");
-            return builder.toString();
+            return fullName(genericArrayType.getGenericComponentType()) +
+                    "[]";
         }
         return null;
     }
@@ -190,17 +189,16 @@ public class ClassPrinter {
         return builder.toString().replaceAll("\\s+", " ").trim();
     }
 
-    private static String printConstructor(@NotNull Constructor<?> constructor, @NotNull String name, boolean isNested) {
-        return new StringBuilder()
-                .append(Modifier.toString(constructor.getModifiers()))
-                .append(printGenericTypes(constructor.getTypeParameters()))
-                .append(" ")
-                .append(name)
-                .append(printArguments(constructor.getGenericParameterTypes(), isNested ? 0 : 1))
-                .append(" ")
-                .append(printExceptions(constructor.getGenericExceptionTypes()))
-                .append("{}")
-                .toString().replaceAll("\\s+", " ").trim();
+    private static String printConstructor(@NotNull Constructor<?> constructor,
+                                           @NotNull String name, boolean isNested) {
+        return (Modifier.toString(constructor.getModifiers()) +
+                printGenericTypes(constructor.getTypeParameters()) +
+                " " +
+                name +
+                printArguments(constructor.getGenericParameterTypes(), isNested ? 0 : 1) +
+                " " +
+                printExceptions(constructor.getGenericExceptionTypes()) +
+                "{}").replaceAll("\\s+", " ").trim();
     }
 
     private static String printClassSignature(@NotNull Class<?> clazz, @NotNull String name) {
@@ -232,7 +230,7 @@ public class ClassPrinter {
         return builder.toString().replaceAll("\\s+", " ").trim();
     }
 
-    private static String printClass(@NotNull Class<?> clazz, @NotNull String name, int indent, boolean isNested) {
+    private static String printClass(@NotNull Class<?> clazz, @NotNull String name, boolean isNested) {
         var builder = new StringBuilder();
         builder.append(printClassSignature(clazz, name));
         builder.append("{");
@@ -252,7 +250,8 @@ public class ClassPrinter {
         }
         for (var innerClass : clazz.getDeclaredClasses()) {
             if (!clazz.isSynthetic()) {
-                lines.add(printClass(innerClass, innerClass.getSimpleName(), indent + 4, Modifier.isStatic(innerClass.getModifiers())));
+                lines.add(printClass(innerClass, innerClass.getSimpleName(),
+                        Modifier.isStatic(innerClass.getModifiers())));
             }
         }
         Collections.sort(lines);
@@ -263,13 +262,11 @@ public class ClassPrinter {
         return builder.toString().replaceAll("\\s+", " ").trim();
     }
 
-    /**
-     * Returns the java code of structure of the given class with the same name
-     */
+    /** Returns the java code of structure of the given class with the same name */
     public static String printStructure(@NotNull Class<?> clazz) {
         replaceFrom = clazz;
         replaceTo = clazz.getSimpleName();
-        return printClass(clazz, clazz.getSimpleName(), 0, true);
+        return printClass(clazz, clazz.getSimpleName(), true);
     }
 
     /**
@@ -280,7 +277,7 @@ public class ClassPrinter {
     public static String printStructure(@NotNull Class<?> clazz, @NotNull String name) {
         replaceFrom = clazz;
         replaceTo = name;
-        return printClass(clazz, name, 0, true);
+        return printClass(clazz, name, true);
     }
 
     /**

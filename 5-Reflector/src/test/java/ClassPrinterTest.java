@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ClassPrinterTest {
     @Test
@@ -65,8 +64,7 @@ class ClassPrinterTest {
 
     Class<?> compileAndGetClass(Class<?> clazz, String className) throws ClassNotFoundException {
         String javaCode = ClassPrinter.printStructure(clazz, className);
-        Class<?> compiledClass = CompilerUtils.CACHED_COMPILER.loadFromJava(className, javaCode);
-        return compiledClass;
+        return (Class<?>) CompilerUtils.CACHED_COMPILER.loadFromJava(className, javaCode);
     }
 
     void cleanupClass(String className) {

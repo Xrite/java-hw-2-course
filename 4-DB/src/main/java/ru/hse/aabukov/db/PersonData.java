@@ -7,9 +7,7 @@ import xyz.morphia.annotations.Property;
 
 import java.util.Objects;
 
-/**
- * This class stores the pair contains person name and number
- */
+/** This class stores the pair contains person name and number */
 @Entity
 public class PersonData {
     private static @NotNull Long nextId = 0L;
@@ -20,25 +18,19 @@ public class PersonData {
     @Property("number")
     private @NotNull String number;
 
-    /**
-     * Creates empty entity
-     */
+    /** Creates empty entity (required by morphia, do not use) */
     public PersonData() {
         id = nextId++;
     }
 
-    /**
-     * Creates entity with given name and number
-     */
+    /** Creates entity with given name and number */
     public PersonData(@NotNull String name, @NotNull String number) {
         this.name = name;
         this.number = number;
         id = nextId++;
     }
 
-    /**
-     * Compares two PersonData. Two objects are equal iff their names and numbers are equal.
-     */
+    /** Compares two PersonData. Two objects are equal iff their names and numbers are equal. */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -53,17 +45,13 @@ public class PersonData {
         return Objects.hash(name, number);
     }
 
-    /**
-     * Returns the name of the entity
-     */
+    /** Returns the name of the entity */
     @NotNull
     public String getName() {
         return name;
     }
 
-    /**
-     * Returns the number of the entity
-     */
+    /** Returns the number of the entity */
     @NotNull
     public String getNumber() {
         return number;

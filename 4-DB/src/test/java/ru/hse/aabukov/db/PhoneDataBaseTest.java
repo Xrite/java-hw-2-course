@@ -1,24 +1,21 @@
 package ru.hse.aabukov.db;
 
-import org.junit.jupiter.api.*;
-import xyz.morphia.Datastore;
-import xyz.morphia.Morphia;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import java.awt.*;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
-import java.util.TreeSet;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PhoneDataBaseTest {
-    final String[] sampleNames   = {"a", "a", "b", "b", "e", "f", "g", "a"};
-    final String[] sampleNumbers = {"a", "b", "c", "a", "f", "f", "g", "c"};
-    final PersonData[] sampleData;
+    private final String[] sampleNames = {"a", "a", "b", "b", "e", "f", "g", "a"};
+    private final String[] sampleNumbers = {"a", "b", "c", "a", "f", "f", "g", "c"};
+    private final PersonData[] sampleData;
 
-    PhoneDataBase dataBase;
+    private PhoneDataBase dataBase;
 
     PhoneDataBaseTest() {
         sampleData = new PersonData[sampleNames.length];
@@ -37,14 +34,14 @@ class PhoneDataBaseTest {
     }
 
     private void fillDataBase() {
-        for(int i = 0; i < sampleNames.length; i++) {
+        for (int i = 0; i < sampleNames.length; i++) {
             dataBase.addRecord(sampleNames[i], sampleNumbers[i]);
         }
     }
 
     @Test
     void addRecord() {
-        for(int i = 0; i < sampleNames.length; i++) {
+        for (int i = 0; i < sampleNames.length; i++) {
             dataBase.addRecord(sampleNames[i], sampleNumbers[i]);
             assertEquals(Set.copyOf(Arrays.asList(sampleData).subList(0, i + 1)), Set.copyOf(dataBase.allRecords()));
         }
@@ -75,9 +72,10 @@ class PhoneDataBaseTest {
     @Test
     void deleteRecord() {
         fillDataBase();
-        for(int i = 0; i < sampleNames.length; i++) {
+        for (int i = 0; i < sampleNames.length; i++) {
             dataBase.deleteRecord(sampleNames[i], sampleNumbers[i]);
-            assertEquals(Set.copyOf(Arrays.asList(sampleData).subList(i + 1, sampleData.length)), Set.copyOf(dataBase.allRecords()));
+            assertEquals(Set.copyOf(Arrays.asList(sampleData).subList(i + 1, sampleData.length)),
+                    Set.copyOf(dataBase.allRecords()));
         }
     }
 
@@ -86,11 +84,14 @@ class PhoneDataBaseTest {
         dataBase.addRecord("a", "a");
         dataBase.addRecord("b", "a");
         dataBase.changeName("a", "a", "a");
-        assertEquals(Set.of(new PersonData("a", "a"), new PersonData("b", "a")), Set.copyOf(dataBase.allRecords()));
+        assertEquals(Set.of(new PersonData("a", "a"), new PersonData("b", "a")),
+                Set.copyOf(dataBase.allRecords()));
         dataBase.changeName("a", "a", "b");
-        assertArrayEquals(new PersonData[] {new PersonData("b", "a"), new PersonData("b", "a")}, dataBase.allRecords().toArray());
+        assertArrayEquals(new PersonData[]{new PersonData("b", "a"),
+                new PersonData("b", "a")}, dataBase.allRecords().toArray());
         dataBase.changeName("a", "a", "a");
-        assertArrayEquals(new PersonData[] {new PersonData("b", "a"), new PersonData("b", "a")}, dataBase.allRecords().toArray());
+        assertArrayEquals(new PersonData[]{new PersonData("b", "a"),
+                new PersonData("b", "a")}, dataBase.allRecords().toArray());
     }
 
     @Test
@@ -98,16 +99,19 @@ class PhoneDataBaseTest {
         dataBase.addRecord("a", "a");
         dataBase.addRecord("a", "b");
         dataBase.changePhone("a", "a", "a");
-        assertEquals(Set.of(new PersonData("a", "a"), new PersonData("a", "b")), Set.copyOf(dataBase.allRecords()));
+        assertEquals(Set.of(new PersonData("a", "a"), new PersonData("a", "b")),
+                Set.copyOf(dataBase.allRecords()));
         dataBase.changePhone("a", "b", "a");
-        assertArrayEquals(new PersonData[] {new PersonData("a", "a"), new PersonData("a", "a")}, dataBase.allRecords().toArray());
+        assertArrayEquals(new PersonData[]{new PersonData("a", "a"),
+                new PersonData("a", "a")}, dataBase.allRecords().toArray());
         dataBase.changeName("a", "b", "a");
-        assertArrayEquals(new PersonData[] {new PersonData("a", "a"), new PersonData("a", "a")}, dataBase.allRecords().toArray());
+        assertArrayEquals(new PersonData[]{new PersonData("a", "a"),
+                new PersonData("a", "a")}, dataBase.allRecords().toArray());
     }
 
     @Test
     void allRecords() {
-        assertArrayEquals(new PersonData[] {}, dataBase.allRecords().toArray());
+        assertArrayEquals(new PersonData[]{}, dataBase.allRecords().toArray());
         fillDataBase();
         assertEquals(Set.copyOf(Arrays.asList(sampleData)), Set.copyOf(dataBase.allRecords()));
     }

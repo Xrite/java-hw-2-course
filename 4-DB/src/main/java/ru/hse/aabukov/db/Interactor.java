@@ -3,9 +3,7 @@ package ru.hse.aabukov.db;
 import java.util.List;
 import java.util.Scanner;
 
-/**
- * Main class that interacts with user
- */
+/** Main class that interacts with user */
 public class Interactor {
     public static void main(String[] args) {
         interact();
@@ -92,6 +90,5 @@ public class Interactor {
             }
             nextCommand = readOperation(in);
         }
-
     }
 }

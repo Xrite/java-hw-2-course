@@ -11,9 +11,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * This class contains methods that implements multithreaded quick sort algorithm
- */
+/** This class contains methods that implements multithreaded quick sort algorithm */
 public class QSort {
     private static final int THRESHOLD = 500000; // was calculated experimentally
     private static final int NUMBER_OF_THREADS = 8;
@@ -35,7 +33,7 @@ public class QSort {
      */
     public static <T> void sort(@NotNull T[] array, @NotNull Comparator<? super T> comparator) throws Throwable {
         if (array.length < THRESHOLD) {
-            var sorter = new Sorter<T>(array, comparator);
+            var sorter = new SingleThreadSorter<T>(array, comparator);
             sorter.sortSingleThread(0, array.length);
             return;
         }
@@ -44,7 +42,8 @@ public class QSort {
         Condition isDone = lock.newCondition();
         AtomicInteger alreadyDone = new AtomicInteger(0);
         try {
-            threadPool.submit(new Sorter<T>(array, 0, array.length, comparator, threadPool, lock, isDone, alreadyDone)).get();
+            threadPool.submit(new Sorter<T>(array, 0, array.length, comparator, threadPool,
+                    lock, isDone, alreadyDone)).get();
         } catch (ExecutionException e) {
             throw e.getCause();
         }
@@ -56,34 +55,16 @@ public class QSort {
         threadPool.shutdown();
     }
 
-    private static class Sorter<T> implements Runnable {
-        private int left;
-        private int right;
-        private @NotNull T[] array;
-        private @NotNull Comparator<? super T> comparator;
-        private @Nullable ExecutorService executorService;
-        private @Nullable Lock lock;
-        private @Nullable Condition isDone;
-        private @Nullable AtomicInteger alreadyDone;
+    private static class SingleThreadSorter<T> {
+        @NotNull T[] array;
+        @NotNull Comparator<? super T> comparator;
 
-        //This constructor is used only for single thread sort
-        Sorter(@NotNull T[] array, @NotNull Comparator<? super T> comparator) {
+        SingleThreadSorter(@NotNull T[] array, @NotNull Comparator<? super T> comparator) {
             this.array = array;
             this.comparator = comparator;
         }
 
-        Sorter(@NotNull T[] array, int left, int right, @NotNull Comparator<? super T> comparator, @NotNull ExecutorService executorService, @NotNull Lock lock, @NotNull Condition isDone, @NotNull AtomicInteger alreadyDone) {
-            this.array = array;
-            this.left = left;
-            this.right = right;
-            this.comparator = comparator;
-            this.executorService = executorService;
-            this.lock = lock;
-            this.isDone = isDone;
-            this.alreadyDone = alreadyDone;
-        }
-
-        private int partition(int left, int right) {
+        int partition(int left, int right) {
             int pivot = left + randomGenerator.nextInt(right - left);
             T pivotValue = array[pivot];
             int leftPointer = left;
@@ -106,7 +87,7 @@ public class QSort {
             return (leftPointer + rightPointer + 1) / 2;
         }
 
-        private void sortSingleThread(int left, int right) {
+        void sortSingleThread(int left, int right) {
             if (right - left < 2) {
                 return;
             }
@@ -120,6 +101,27 @@ public class QSort {
             if (middle < right) {
                 sortSingleThread(middle, right);
             }
+        }
+    }
+
+    private static class Sorter<T> extends SingleThreadSorter<T> implements Runnable {
+        private int left;
+        private int right;
+        private @NotNull ExecutorService executorService;
+        private @NotNull Lock lock;
+        private @NotNull Condition isDone;
+        private @NotNull AtomicInteger alreadyDone;
+
+        Sorter(@NotNull T[] array, int left, int right, @NotNull Comparator<? super T> comparator,
+               @NotNull ExecutorService executorService, @NotNull Lock lock, @NotNull Condition isDone,
+               @NotNull AtomicInteger alreadyDone) {
+            super(array, comparator);
+            this.left = left;
+            this.right = right;
+            this.executorService = executorService;
+            this.lock = lock;
+            this.isDone = isDone;
+            this.alreadyDone = alreadyDone;
         }
 
         @Override

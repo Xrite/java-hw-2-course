@@ -2,6 +2,10 @@ plugins {
     id 'java'
 }
 
+application {
+    mainClassName = "ru.hse.aabukov.db.Interactor"
+}
+
 group 'DB'
 version '1.0-SNAPSHOT'
 

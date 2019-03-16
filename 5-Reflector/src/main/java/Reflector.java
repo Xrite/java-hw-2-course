@@ -25,9 +25,7 @@ public class Reflector {
         writer.close();
     }
 
-    /**
-     * Compares two classes and output to stdin unique classes and methods for each class
-     */
+    /** Compares two classes and output to stdin unique classes and methods for each class */
     public static void diffClasses(@NotNull Class<?> a, @NotNull Class<?> b) {
         List<Set<String>> sets = ClassPrinter.diffClasses(a, b);
         assert (sets.size() == 2);

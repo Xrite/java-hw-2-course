@@ -12,7 +12,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /** This class contains methods that implements multithreaded quick sort algorithm */
-public class QSort {
+class QSort {
     private static final int THRESHOLD = 500000; // was calculated experimentally
     private static final int NUMBER_OF_THREADS = 8;
     private static volatile Random randomGenerator = new Random();
@@ -22,7 +22,7 @@ public class QSort {
      *
      * @throws Throwable {@code InterruptedException} or an exception that occurred during the sort (due to invalid comparator)
      */
-    public static <T extends Comparable<? super T>> void sort(@NotNull T[] array) throws Throwable {
+    static <T extends Comparable<? super T>> void sort(@NotNull T[] array) throws Throwable {
         sort(array, Comparator.naturalOrder());
     }
 
@@ -31,7 +31,7 @@ public class QSort {
      *
      * @throws Throwable {@code InterruptedException} or an exception that occurred during the sort (due to invalid comparator)
      */
-    public static <T> void sort(@NotNull T[] array, @NotNull Comparator<? super T> comparator) throws Throwable {
+    static <T> void sort(@NotNull T[] array, @NotNull Comparator<? super T> comparator) throws Throwable {
         if (array.length < THRESHOLD) {
             var sorter = new SingleThreadSorter<T>(array, comparator);
             sorter.sortSingleThread(0, array.length);

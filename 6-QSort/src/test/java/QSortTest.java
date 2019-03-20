@@ -104,7 +104,7 @@ class QSortTest {
     }
 
     class A {
-        public int field;
+        int field;
 
         @Override
         public boolean equals(Object o) {
@@ -120,7 +120,7 @@ class QSortTest {
         }
     }
 
-    class B extends A {
+    private class B extends A {
 
     }
 }

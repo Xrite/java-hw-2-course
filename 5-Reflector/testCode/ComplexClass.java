@@ -1,8 +1,7 @@
 abstract class ComplexClass<T extends java.lang.Integer> extends EmptyClass {
   <U> ComplexClass(U t0) {}
 
-  abstract static interface F
-      extends java.lang.instrument.Instrumentation, java.awt.image.ImageObserver {}
+  abstract static interface F extends SimpleInterface1, SimpleInterface2 {}
 
   class C {
     C() {}

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Scanner;
 
 /** Main class that interacts with user */
-public class Interactor {
+class Interactor {
     public static void main(String[] args) {
         interact();
     }

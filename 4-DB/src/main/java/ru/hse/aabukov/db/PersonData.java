@@ -9,7 +9,7 @@ import java.util.Objects;
 
 /** This class stores the pair contains person name and number */
 @Entity
-public class PersonData {
+class PersonData {
     private static @NotNull Long nextId = 0L;
     @Id
     private @NotNull Long id;
@@ -24,7 +24,7 @@ public class PersonData {
     }
 
     /** Creates entity with given name and number */
-    public PersonData(@NotNull String name, @NotNull String number) {
+    PersonData(@NotNull String name, @NotNull String number) {
         this.name = name;
         this.number = number;
         id = nextId++;
@@ -46,14 +46,12 @@ public class PersonData {
     }
 
     /** Returns the name of the entity */
-    @NotNull
-    public String getName() {
+    @NotNull String getName() {
         return name;
     }
 
     /** Returns the number of the entity */
-    @NotNull
-    public String getNumber() {
+    @NotNull String getNumber() {
         return number;
     }
 }

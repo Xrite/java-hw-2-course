@@ -8,14 +8,14 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.Set;
 
-public class Reflector {
+class Reflector {
     /**
      * Prints formatted structure code of the given class
      *
      * @throws FileNotFoundException if the program failed to write java file
      * @throws FormatterException    should not be thrown. Throwing this exception means that program contains bug.
      */
-    public static void printStructure(@NotNull Class<?> clazz) throws FileNotFoundException, FormatterException {
+    static void printStructure(@NotNull Class<?> clazz) throws FileNotFoundException, FormatterException {
         var file = new File(clazz.getSimpleName() + ".java");
         var writer = new PrintWriter(file);
         var formatter = new Formatter();
@@ -26,7 +26,7 @@ public class Reflector {
     }
 
     /** Compares two classes and output to stdin unique classes and methods for each class */
-    public static void diffClasses(@NotNull Class<?> a, @NotNull Class<?> b) {
+    static void diffClasses(@NotNull Class<?> a, @NotNull Class<?> b) {
         List<Set<String>> sets = ClassPrinter.diffClasses(a, b);
         assert (sets.size() == 2);
         Set<String> aSet = sets.get(0);

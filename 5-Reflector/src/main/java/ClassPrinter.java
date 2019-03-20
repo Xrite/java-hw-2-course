@@ -6,7 +6,7 @@ import java.util.*;
 /**
  * This class converts Class into string and compares two classes.
  */
-public class ClassPrinter {
+class ClassPrinter {
     //Just because not null. It will be changed before each operation
     private static @NotNull Class<?> replaceFrom = Object.class;
     private static @NotNull String replaceTo = "Object";
@@ -127,32 +127,20 @@ public class ClassPrinter {
     private static String getDefaultValue(@NotNull Class<?> clazz) {
         if (clazz.equals(boolean.class)) {
             return "false";
-        }
-        if (clazz.equals(char.class)) {
-            return "'0'";
-        }
-        if (clazz.equals(byte.class)) {
+        } else if (clazz.equals(byte.class)
+                || clazz.equals(short.class)
+                || clazz.equals(int.class)
+                || clazz.equals(long.class)
+                || clazz.equals(float.class)
+                || clazz.equals(double.class)) {
             return "0";
-        }
-        if (clazz.equals(short.class)) {
-            return "0";
-        }
-        if (clazz.equals(int.class)) {
-            return "0";
-        }
-        if (clazz.equals(long.class)) {
-            return "0";
-        }
-        if (clazz.equals(float.class)) {
-            return "0";
-        }
-        if (clazz.equals(double.class)) {
-            return "0";
-        }
-        if (clazz.equals(void.class)) {
+        } else if (clazz.equals(void.class)) {
             return "";
+        } else if (clazz.equals(char.class)) {
+            return "'0'";
+        } else {
+            return "null";
         }
-        return "null";
     }
 
     private static String printExceptions(@NotNull Type[] exceptions) {
@@ -274,7 +262,7 @@ public class ClassPrinter {
      *
      * @param name name of the generated class
      */
-    public static String printStructure(@NotNull Class<?> clazz, @NotNull String name) {
+    static String printStructure(@NotNull Class<?> clazz, @NotNull String name) {
         replaceFrom = clazz;
         replaceTo = name;
         return printClass(clazz, name, true);
@@ -285,7 +273,7 @@ public class ClassPrinter {
      *
      * @return list of two elements. Each element contains unique fields and methods for {@code a} and {@code b} respectively.
      */
-    public static List<Set<String>> diffClasses(@NotNull Class<?> a, @NotNull Class<?> b) {
+    static List<Set<String>> diffClasses(@NotNull Class<?> a, @NotNull Class<?> b) {
         var aSet = getFieldsAndMethods(a);
         var bSet = getFieldsAndMethods(b);
         var intersection = new HashSet<String>(aSet);

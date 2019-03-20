@@ -1,11 +1,7 @@
-import java.awt.image.ImageObserver;
-import java.lang.instrument.Instrumentation;
-import java.util.List;
-
 public class ComplexClass2<T extends Integer> {
     java.lang.Integer ololo;
     int ke;
-    List<Integer> al;
+    java.util.List<Integer> al;
     private volatile Object kek;
 
     <U> ComplexClass2(U x) {
@@ -19,7 +15,7 @@ public class ComplexClass2<T extends Integer> {
     private void foo(ComplexClass<? extends Object> fuf) {
     }
 
-    interface F extends Instrumentation, ImageObserver {
+    interface F extends SimpleInterface1, SimpleInterface2 {
 
     }
 

@@ -1,5 +1,3 @@
-import java.util.List;
-
 public class Generics<T, V, U extends Integer> {
     T t1;
     final V t2 = null;
@@ -9,7 +7,7 @@ public class Generics<T, V, U extends Integer> {
     <K> void f1(T a1, V a2, U a3) {}
     <K, N extends K> void f2() {}
     final int f3(Comparable<? extends T> a1) {return 0;};
-    static void f4(List<?> a1) {}
+    static void f4(java.util.List<?> a1) {}
 
     Generics() {}
     <K> Generics(T a1) {}

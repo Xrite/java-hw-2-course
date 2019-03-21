@@ -1,0 +1,2 @@
+public interface SimpleInterface2 {
+}

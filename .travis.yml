@@ -1,8 +1,10 @@
 language: java
 jdk: oraclejdk11
+services: mongodb
 os:
 - linux
 env:
+- PROJECT_DIR=4-DB
 - PROJECT_DIR=3-MyTreeSet
 - PROJECT_DIR=2-Trie
 - PROJECT_DIR=1-HashTable

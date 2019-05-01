@@ -8,15 +8,19 @@ import java.util.Queue;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/** Simple thread pool */
 public class ThreadPool {
     @NotNull
     private final TaskQueue<Task<?>> tasks = new TaskQueue<>(new ArrayDeque<>());
     @NotNull
     private final Thread[] workers;
-    @NotNull
-    private final Object taskAvailable = new Object();
     private volatile boolean isShutdown = false;
 
+    /**
+     * Creates a new thread pool with given amount of threads
+     *
+     * @param n number of threads to use
+     */
     public ThreadPool(int n) {
         workers = new Thread[n];
         for (int i = 0; i < n; i++) {
@@ -35,16 +39,26 @@ public class ThreadPool {
         }
     }
 
-    @Nullable
+    /**
+     * Creates a delayed task from supplier
+     *
+     * @throws IllegalStateException when tried to add new task to closed thread pool
+     */
+    @NotNull
     public <T> LightFuture<T> submit(@NotNull Supplier<T> supplier) {
         if (isShutdown) {
-            return null;
+            throw new IllegalStateException("ThreadPool was shut down");
         }
         var task = new Task<>(supplier);
         tasks.add(task);
         return task;
     }
 
+    /**
+     * Closes the thread pool for new tasks and asks every thread to interrupt
+     *
+     * @return true if thread pool was successfully closed, false if it was already closed
+     */
     public boolean shutdown() {
         if (!isShutdown) {
             isShutdown = true;
@@ -61,8 +75,6 @@ public class ThreadPool {
         @NotNull
         private final Supplier<? extends T> supplier;
         @NotNull
-        private final Object readyLock = new Object();
-        @NotNull
         private final List<Task<?>> thenApplyTasks = new ArrayList<>();
         private volatile boolean isReady;
         @Nullable
@@ -74,16 +86,20 @@ public class ThreadPool {
             this.supplier = supplier;
         }
 
+        /** {@inheritDoc} */
         @Override
         public boolean isReady() {
             return isReady;
         }
 
+        /** {@inheritDoc} */
         @Nullable
         @Override
         public T get() throws InterruptedException, LightExecutionException {
-            while (!isReady) {
-                readyLock.wait();
+            synchronized (thenApplyTasks) {
+                while (!isReady) {
+                    thenApplyTasks.wait();
+                }
             }
             if (exception != null) {
                 throw new LightExecutionException(exception);
@@ -91,9 +107,13 @@ public class ThreadPool {
             return result;
         }
 
+        /**{@inheritDoc}*/
         @NotNull
         @Override
         public <V> LightFuture<V> thenApply(@NotNull Function<? super T, ? extends V> function) {
+            if (isShutdown) {
+                throw new IllegalStateException("ThreadPool was shut down");
+            }
             var task = new Task<V>(() -> function.apply(result));
             if (isReady) {
                 tasks.add(task);
@@ -116,11 +136,11 @@ public class ThreadPool {
                 exception = e;
             }
             isReady = true;
-            readyLock.notify();
             synchronized (thenApplyTasks) {
                 for (var task : thenApplyTasks) {
                     tasks.add(task);
                 }
+                thenApplyTasks.notify();
             }
         }
     }
@@ -128,29 +148,24 @@ public class ThreadPool {
     private class TaskQueue<T> {
         @NotNull
         private final Queue<T> queue;
+
         @NotNull
-        private final Object notEmpty = new Object();
 
         private TaskQueue(@NotNull Queue<T> queue) {
             this.queue = queue;
         }
 
-        private synchronized boolean add(@NotNull T e) {
-            var result = queue.add(e);
-            if (queue.size() == 1) {
-                notify();
-            }
-            return result;
+        private synchronized void add(@NotNull T e) {
+            queue.add(e);
+            notify();
         }
 
         @NotNull
         private synchronized T poll() throws InterruptedException {
-            if (queue.size() == 0) {
+            while (queue.size() == 0) {
                 wait();
             }
-            var result = queue.poll();
-            assert result != null;
-            return result;
+            return queue.poll();
         }
     }
 }

@@ -9,4 +9,5 @@ env:
 - PROJECT_DIR=3-MyTreeSet
 - PROJECT_DIR=4-DB
 - PROJECT_DIR=5-Reflector
+- PROJECT_DIR=T4-MD5
 script: cd $PROJECT_DIR && ./gradlew check

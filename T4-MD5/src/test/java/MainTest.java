@@ -23,13 +23,6 @@ class MainTest {
     }
     @Test
     void testEmptyDir() throws NoSuchAlgorithmException, IOException {
-        var testName = "test-empty-dir";
-        var path = openTest("test-empty-dir");
-        var digest = MessageDigest.getInstance("MD5");
-        digest.update(testName.getBytes());
-        var result = digest.digest();
-        assertArrayEquals(result, Main.calcHash(path));
-        assertArrayEquals(result, Main.calcHashForkJoin(8, path));
     }
 
     @Test

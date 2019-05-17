@@ -19,13 +19,12 @@ class ThreadPoolTest {
     }
 
     @RepeatedTest(REPETITIONS)
-    void testSingleThread() throws LightExecutionException, InterruptedException {
+    void testSingleThread() throws LightExecutionException {
         var pool = new ThreadPool(1);
         var future = new ArrayList<LightFuture<Integer>>();
         for (int i = 0; i < 100; i++) {
             future.add(pool.submit(() -> fib(15)));
         }
-        Thread.sleep(1000);
         for (int i = 0; i < 100; i++) {
             assertEquals(610, (int) future.get(i).get());
         }
@@ -57,15 +56,15 @@ class ThreadPoolTest {
     void testThenApplyException() {
         var pool = new ThreadPool(4);
         var future = pool.submit(() -> {
-            throw new RuntimeException();
+            throw new RuntimeException("Error");
         });
-        assertThrows(LightExecutionException.class, () -> future.thenApply(Object::toString).get());
+        assertThrows(LightExecutionException.class, () -> future.thenApply(Object::toString).get(), "Error");
     }
 
     @RepeatedTest(REPETITIONS)
     void testMultipleShutdowns() {
         var pool = new ThreadPool(4);
-        var future = pool.submit(() -> 0);
+        pool.submit(() -> 0);
         assertTrue(pool.shutdown());
         assertFalse(pool.shutdown());
         assertFalse(pool.shutdown());
@@ -81,7 +80,7 @@ class ThreadPoolTest {
     }
 
     @RepeatedTest(REPETITIONS)
-    void testChain() throws LightExecutionException, InterruptedException {
+    void testChain() throws LightExecutionException {
         var pool = new ThreadPool(4);
         var future = new ArrayList<LightFuture<Integer>>(10);
         future.add(pool.submit(() -> 0));
@@ -94,29 +93,43 @@ class ThreadPoolTest {
     }
 
     @RepeatedTest(REPETITIONS)
-    void checkIsReady() throws InterruptedException {
+    void checkIsReady() throws LightExecutionException {
         var pool = new ThreadPool(4);
         var future = pool.submit(() -> 0);
-        Thread.sleep(1000);
+        future.get();
         assertTrue(future.isReady());
+        future = pool.submit(() -> {
+            while (true) ;
+        });
+        assertFalse(future.isReady());
     }
 
     @RepeatedTest(REPETITIONS)
-    void testAllThreadsAreWorking() throws InterruptedException {
+    void testAllThreadsAreWorking() {
         final var names = new HashSet<String>();
         var pool = new ThreadPool(8);
-        for (int i = 0; i < 500; i++) {
-            pool.submit(() -> {
+        var tasks = new ArrayList<LightFuture>();
+        for (int i = 0; i < 100; i++) {
+            tasks.add(pool.submit(() -> {
                 names.add(Thread.currentThread().getName());
                 try {
-                    Thread.sleep(10000000);
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 return 0;
-            });
+            }));
         }
-        Thread.sleep(1000);
+        tasks.forEach(future -> {
+            try {
+                future.get();
+            } catch (LightExecutionException e) {
+                e.printStackTrace();
+                fail();
+            }
+        });
+
         assertTrue(4 <= names.size());
+        System.out.println(names.size());
     }
 }

@@ -64,6 +64,13 @@ public class ThreadPool {
             isShutdown = true;
             for (var worker : workers) {
                 worker.interrupt();
+                while (worker.isAlive()) {
+                    try {
+                        worker.join();
+                    } catch (InterruptedException ignored) {
+                        //ignored
+                    }
+                }
             }
             return true;
         } else {
@@ -95,10 +102,15 @@ public class ThreadPool {
         /** {@inheritDoc} */
         @Nullable
         @Override
-        public T get() throws InterruptedException, LightExecutionException {
+        public T get() throws LightExecutionException {
             synchronized (thenApplyTasks) {
                 while (!isReady) {
-                    thenApplyTasks.wait();
+                    try {
+                        thenApplyTasks.wait();
+                    } catch (InterruptedException e) {
+                        exception = new LightExecutionException(e);
+                        isReady = true;
+                    }
                 }
             }
             if (exception != null) {
@@ -107,7 +119,7 @@ public class ThreadPool {
             return result;
         }
 
-        /**{@inheritDoc}*/
+        /** {@inheritDoc} */
         @NotNull
         @Override
         public <V> LightFuture<V> thenApply(@NotNull Function<? super T, ? extends V> function) {
@@ -116,10 +128,12 @@ public class ThreadPool {
             }
             var task = new Task<V>(() -> function.apply(result));
             if (isReady) {
+                task.exception = exception;
                 tasks.add(task);
             } else {
                 synchronized (thenApplyTasks) {
                     if (isReady) {
+                        task.exception = exception;
                         tasks.add(task);
                     } else {
                         thenApplyTasks.add(task);
@@ -130,14 +144,17 @@ public class ThreadPool {
         }
 
         private void compute() {
-            try {
-                result = supplier.get();
-            } catch (Exception e) {
-                exception = e;
+            if (exception == null) {
+                try {
+                    result = supplier.get();
+                } catch (Exception e) {
+                    exception = e;
+                }
             }
             isReady = true;
             synchronized (thenApplyTasks) {
                 for (var task : thenApplyTasks) {
+                    task.exception = exception;
                     tasks.add(task);
                 }
                 thenApplyTasks.notify();
@@ -150,7 +167,6 @@ public class ThreadPool {
         private final Queue<T> queue;
 
         @NotNull
-
         private TaskQueue(@NotNull Queue<T> queue) {
             this.queue = queue;
         }

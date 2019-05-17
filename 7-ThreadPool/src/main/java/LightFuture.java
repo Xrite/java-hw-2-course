@@ -13,10 +13,9 @@ public interface LightFuture<T> {
      * Waiting for task to be executed
      *
      * @return Result of the task
-     * @throws InterruptedException    When the task was interrupted
      * @throws LightExecutionException When an exception occurred during execution of task
      */
-    T get() throws InterruptedException, LightExecutionException;
+    T get() throws LightExecutionException;
 
     /**
      * Applies a function to the result of the task and makes a new delayed task

@@ -71,7 +71,7 @@ public class Game extends Application {
                 if (keys.contains(KeyCode.DOWN)) {
                     cannon.turnRight();
                 }
-                if (keys.contains(KeyCode.SPACE)) {
+                if (keys.contains(KeyCode.ENTER)) {
                     projectiles.add(cannon.shoot(PROJECTILE_POWERS[projectileType]));
                 }
                 if (keys.contains(KeyCode.DIGIT1)) {

@@ -7,6 +7,8 @@ import java.util.Random;
 /** Class represents a landscape */
 class Landscape implements Renderable {
     private static final double HEIGHT_MULTIPLIER = 0.5;
+    private double minX;
+    private double maxX;
     private Point2D[] peaks;
 
     /**
@@ -14,6 +16,8 @@ class Landscape implements Renderable {
      * height and width in meters and uses the seed to generate landscape
      */
     Landscape(int peaksCount, double width, double height, long seed) {
+        minX = 0;
+        maxX = width;
         var xCoords = new double[peaksCount + 2];
         peaks = new Point2D[peaksCount + 2];
         xCoords[0] = -0.1;
@@ -46,5 +50,15 @@ class Landscape implements Renderable {
             renderer.drawLine(peaks[i], peaks[i + 1]);
             renderer.fillUnderLine(peaks[i], peaks[i + 1], Color.DARKGREEN);
         }
+    }
+
+    /** Returns minimal x */
+    double getMinX() {
+        return minX;
+    }
+
+    /** Returns maximal x */
+    double getMaxX() {
+        return maxX;
     }
 }

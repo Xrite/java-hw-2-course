@@ -21,14 +21,18 @@ class Cannon implements Renderable {
     void moveRight() {
         double newX = position.getX() + CANNON_VELOCITY;
         double newY = landscape.getHeightAt(newX);
-        position = new Point2D(newX, newY);
+        if(newX <= landscape.getMaxX()) {
+            position = new Point2D(newX, newY);
+        }
     }
 
     /** Moves cannon to the left */
     void moveLeft() {
         double newX = position.getX() - CANNON_VELOCITY;
         double newY = landscape.getHeightAt(newX);
-        position = new Point2D(newX, newY);
+        if(newX >= landscape.getMinX()) {
+            position = new Point2D(newX, newY);
+        }
     }
 
     /** Turns a cannon's barrel right */

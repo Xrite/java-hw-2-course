@@ -17,19 +17,20 @@ class GameController {
 
     /**
      * Creates a controller
-     * @param n size of a game that must be even
+     *
+     * @param n       size of a game that must be even
      * @param context a context for controller
      * @throws IllegalArgumentException when n is odd or not positive
      */
     GameController(int n, GameContext context) throws IllegalArgumentException {
         this.context = context;
         this.n = n;
-        if(n % 2 == 1 || n <= 0) {
+        if (n % 2 == 1 || n <= 0) {
             throw new IllegalArgumentException("N can't be ood");
         }
         var nums = new ArrayList<Integer>();
         var random = new Random();
-        for(int i = 0; i < n * n / 2; i++) {
+        for (int i = 0; i < n * n / 2; i++) {
             var value = random.nextInt(n * n / 2);
             nums.add(value);
             nums.add(value);
@@ -37,8 +38,8 @@ class GameController {
         Collections.shuffle(nums);
         field = new int[n][n];
         guessed = new boolean[n][n];
-        for(int i = 0; i < n; i++) {
-            for(int j = 0; j < n; j++) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
                 field[i][j] = nums.get(i * n + j);
                 guessed[i][j] = false;
             }
@@ -52,28 +53,29 @@ class GameController {
 
     /**
      * Signals the controller that item was selected
+     *
      * @param position position of selected item
      */
     void select(Position position) {
-        if(guessed[position.i][position.j]) {
+        if (guessed[position.i][position.j]) {
             return;
         }
-        if(firstSelected == null) {
+        if (firstSelected == null) {
             firstSelected = position;
             context.onFirstItemSelected(position);
             return;
         }
-        if(secondSelected == null) {
-            if(firstSelected.equals(position)) {
+        if (secondSelected == null) {
+            if (firstSelected.equals(position)) {
                 return;
             }
             secondSelected = position;
-            if(getAt(firstSelected) == getAt(secondSelected)) {
+            if (getAt(firstSelected) == getAt(secondSelected)) {
                 context.onCorrectMatch(firstSelected, secondSelected, Integer.toString(getAt(firstSelected)), Integer.toString(getAt(secondSelected)));
                 guessed[firstSelected.i][firstSelected.j] = true;
                 guessed[secondSelected.i][secondSelected.j] = true;
                 guessedCount += 2;
-                if(guessedCount == n * n) {
+                if (guessedCount == n * n) {
                     context.onGameEnded();
                 }
             } else {

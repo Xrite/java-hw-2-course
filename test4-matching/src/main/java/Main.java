@@ -24,12 +24,12 @@ public class Main extends Application implements GameContext {
 
     /** {@inheritDoc} */
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         var parameters = getParameters().getRaw();
         int n = Integer.parseInt(parameters.get(0));
         buttons = new ToggleButton[n][n];
         primaryStage.setScene(createGame(n));
-        primaryStage.setTitle("GameController");
+        primaryStage.setTitle("Game");
         primaryStage.setMinHeight(n * 30);
         primaryStage.setMinWidth(n * 30);
         primaryStage.setHeight(n * 100);
@@ -54,9 +54,7 @@ public class Main extends Application implements GameContext {
                 int copyJ = j;
                 var button = new ToggleButton();
                 button.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-                button.setOnAction(event -> {
-                    gameController.select(new GameController.Position(copyI, copyJ));
-                });
+                button.setOnAction(event -> gameController.select(new GameController.Position(copyI, copyJ)));
                 button.setFocusTraversable(true);
                 gridPane.add(button, i, j);
                 buttons[i][j] = button;
@@ -65,7 +63,7 @@ public class Main extends Application implements GameContext {
         return new Scene(gridPane);
     }
 
-    /** {@inheritDoc}*/
+    /** {@inheritDoc} */
     @Override
     public void onFirstItemSelected(GameController.Position position) {
         buttons[position.i][position.j].setText("?");
@@ -103,9 +101,7 @@ public class Main extends Application implements GameContext {
     @Override
     public void onGameEnded() {
         var alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setOnCloseRequest(event -> {
-            Platform.exit();
-        });
+        alert.setOnCloseRequest(event -> Platform.exit());
         alert.setTitle("GameController over");
         alert.setContentText("Epic win!");
         alert.show();

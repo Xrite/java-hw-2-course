@@ -25,8 +25,8 @@ public class Main extends Application implements GameContext {
     /** {@inheritDoc} */
     @Override
     public void start(Stage primaryStage) throws Exception {
-        //var parameters = getParameters().getRaw();
-        int n = 2;//Integer.parseInt(parameters.get(0));
+        var parameters = getParameters().getRaw();
+        int n = Integer.parseInt(parameters.get(0));
         buttons = new ToggleButton[n][n];
         primaryStage.setScene(createGame(n));
         primaryStage.setTitle("GameController");

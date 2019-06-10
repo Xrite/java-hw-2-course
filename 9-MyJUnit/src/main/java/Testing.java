@@ -33,8 +33,8 @@ class Testing {
      * @param className name of the class
      * @return TestingSummary object that contains information about testing result
      * @throws TestingException when there are no class with such name or some methods contain multiple annotations
-     *                          or testing method has arguments or method that is not annotated with @Test throws an exception or some unexpected
-     *                          problem occurred
+     *                          or testing method has arguments or method that is not annotated with @Test throws an
+     *                          exception or some unexpected problem occurred
      */
     @NotNull
     static TestingSummary testClass(@NotNull String className) throws TestingException {
@@ -47,9 +47,9 @@ class Testing {
      *
      * @param clazz Class object to test
      * @return TestingSummary object that contains information about testing result
-     * @throws TestingException TestingException when there are no class with such name or some methods contain multiple annotations
-     *                          or testing method has arguments or method that is not annotated with @Test throws an exception or some unexpected
-     *                          problem occurred
+     * @throws TestingException TestingException when there are no class with such name or some methods contain
+     *                          multiple annotation or testing method has arguments or method that is not annotated
+     *                          with @Test throws an exception or some unexpected problem occurred
      */
     @SuppressWarnings("unchecked")
     @NotNull
@@ -72,12 +72,14 @@ class Testing {
         return summary;
     }
 
-    private static void invokeMethodsNoThrows(@NotNull Object instance, @NotNull List<Method> methods, @NotNull String annotation) throws TestingException {
+    private static void invokeMethodsNoThrows(@NotNull Object instance, @NotNull List<Method> methods,
+                                              @NotNull String annotation) throws TestingException {
         for (var method : methods) {
             try {
                 method.invoke(instance);
             } catch (IllegalAccessException | InvocationTargetException e) {
-                var exception = new TestingException("Exception was thrown when calling " + method.getName() + " annotated " + annotation);
+                var exception = new TestingException("Exception was thrown when calling " + method.getName() +
+                        " annotated " + annotation);
                 exception.addSuppressed(e);
                 throw exception;
             }
@@ -106,7 +108,8 @@ class Testing {
 
     @SuppressWarnings("unchecked")
     @NotNull
-    private static List<Method>[] filterUniqueMethods(@NotNull Class<?> clazz, @NotNull Predicate<Method>[] predicates) throws TestingException {
+    private static List<Method>[] filterUniqueMethods(@NotNull Class<?> clazz, @NotNull Predicate<Method>[] predicates)
+            throws TestingException {
         var methods = clazz.getDeclaredMethods();
         var result = (ArrayList<Method>[]) new ArrayList[predicates.length];
         for (int i = 0; i < predicates.length; i++) {
@@ -118,7 +121,8 @@ class Testing {
             for (int i = 0; i < predicates.length; i++) {
                 if (predicates[i].test(method)) {
                     if (method.getParameterCount() != 0) {
-                        throw new TestingException("Testing methods must have no arguments. Failed on " + method.getName());
+                        throw new TestingException("Testing methods must have no arguments. Failed on "
+                                + method.getName());
                     }
                     predicatesSatisfied++;
                     result[i].add(method);
@@ -156,17 +160,20 @@ class Testing {
 
         /** Returns all passed methods summaries */
         List<MethodSummary.Passed> getPassed() {
-            return tests.stream().filter(test -> test instanceof TestingSummary.MethodSummary.Passed).map(test -> (MethodSummary.Passed) test).collect(Collectors.toList());
+            return tests.stream().filter(test -> test instanceof TestingSummary.MethodSummary.Passed)
+                    .map(test -> (MethodSummary.Passed) test).collect(Collectors.toList());
         }
 
         /** Returns all failed methods summaries */
         List<MethodSummary.Failed> getFailed() {
-            return tests.stream().filter(test -> test instanceof TestingSummary.MethodSummary.Failed).map(test -> (MethodSummary.Failed) test).collect(Collectors.toList());
+            return tests.stream().filter(test -> test instanceof TestingSummary.MethodSummary.Failed)
+                    .map(test -> (MethodSummary.Failed) test).collect(Collectors.toList());
         }
 
         /** Returns all ignored methods summaries */
         List<MethodSummary.Ignored> getIgnored() {
-            return tests.stream().filter(test -> test instanceof TestingSummary.MethodSummary.Ignored).map(test -> (MethodSummary.Ignored) test).collect(Collectors.toList());
+            return tests.stream().filter(test -> test instanceof TestingSummary.MethodSummary.Ignored)
+                    .map(test -> (MethodSummary.Ignored) test).collect(Collectors.toList());
         }
 
         /** Class that contains method testing summary */
@@ -177,7 +184,8 @@ class Testing {
             }
 
             @NotNull
-            private static MethodSummary runMethod(@NotNull Method method, @NotNull Object instance) throws TestingException {
+            private static MethodSummary runMethod(@NotNull Method method, @NotNull Object instance)
+                    throws TestingException {
                 if (!method.isAnnotationPresent(Test.class)) {
                     throw new IllegalArgumentException("Attempt to test method without @Test annotation");
                 }
@@ -214,7 +222,8 @@ class Testing {
                 private @NotNull String thrownException;
                 private double timeMillis;
 
-                private Failed(@NotNull Method method, @NotNull Class<? extends Throwable> expected, Class<? extends Throwable> thrown, long timeNanos) {
+                private Failed(@NotNull Method method, @NotNull Class<? extends Throwable> expected,
+                               Class<? extends Throwable> thrown, long timeNanos) {
                     methodName = method.getName();
                     if (expected.equals(NoException.class)) {
                         expectedException = "nothing";
@@ -229,7 +238,8 @@ class Testing {
                 @Override
                 @NotNull
                 String show() {
-                    return "Test " + methodName + "failed in " + timeMillis + " ms: expected " + expectedException + " but " + thrownException + " was thrown";
+                    return "Test " + methodName + "failed in " + timeMillis + " ms: expected "
+                            + expectedException + " but " + thrownException + " was thrown";
                 }
             }
 

@@ -107,11 +107,13 @@ class ThreadPoolTest {
     @RepeatedTest(REPETITIONS)
     void testAllThreadsAreWorking() {
         final var names = new HashSet<String>();
-        var pool = new ThreadPool(8);
+        var pool = new ThreadPool(4);
         var tasks = new ArrayList<LightFuture>();
         for (int i = 0; i < 100; i++) {
             tasks.add(pool.submit(() -> {
-                names.add(Thread.currentThread().getName());
+                synchronized (names) {
+                    names.add(Thread.currentThread().getName());
+                }
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
@@ -129,7 +131,6 @@ class ThreadPoolTest {
             }
         });
 
-        assertTrue(4 <= names.size());
-        System.out.println(names.size());
+        assertEquals(4, names.size());
     }
 }

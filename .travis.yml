@@ -10,4 +10,5 @@ env:
 - PROJECT_DIR=4-DB
 - PROJECT_DIR=5-Reflector
 - PROJECT_DIR=9-MyJUnit
+- PROJECT_DIR=T4-MD5
 script: cd $PROJECT_DIR && ./gradlew check

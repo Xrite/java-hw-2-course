@@ -3,9 +3,11 @@ import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,6 +24,7 @@ public class Game extends Application {
     private static final double WIDTH_IN_METERS = 1000;
     private static final int PEAKS_COUNT = 20;
     private static final int SEED = 10;
+    private static final int DEFAULT_PROJECTILE_TYPE = 0;
     private static final double[] PROJECTILE_POWERS = {0.1, 0.2, 0.3, 0.5, 0.7};
     private static final String GAME_NAME = "Scorched earth";
 
@@ -45,77 +48,122 @@ public class Game extends Application {
         var graphicsContext = canvas.getGraphicsContext2D();
         Set<KeyCode> keys = new HashSet<>();
         scene.setOnKeyPressed(event -> keys.add(event.getCode()));
-        new AnimationTimer() {
+        new GameAnimation(graphicsContext, DEFAULT_PROJECTILE_TYPE, keys).start();
+        primaryStage.show();
+    }
 
-            List<Explosion> explosions = new ArrayList<>();
-            List<Projectile> projectiles = new ArrayList<>();
-            int projectileType = 0;
-            Renderer renderer = new Renderer(graphicsContext, WIDTH, HEIGHT, WIDTH_IN_METERS);
-            Landscape landscape = new Landscape(PEAKS_COUNT, renderer.getWidthInMeters(), renderer.getHeightInMeters(), SEED);
-            Cannon cannon = new Cannon(landscape, CANNON_POSITION);
-            Target target = new Target(TARGET_POSITION, TARGET_RADIUS, landscape);
+    private class GameAnimation extends AnimationTimer {
+        @NotNull
+        private List<Explosion> explosions = new ArrayList<>();
+        @NotNull
+        private List<Projectile> projectiles = new ArrayList<>();
+        private int projectileType;
+        @NotNull
+        private Renderer renderer;
+        @NotNull
+        private Landscape landscape;
+        @NotNull
+        private Cannon cannon;
+        @NotNull
+        private Target target;
+        @NotNull
+        private Set<KeyCode> keys;
 
-            /** {@inheritDoc} */
-            @Override
-            public void handle(long now) {
-                renderer.clear();
-                if (keys.contains(KeyCode.LEFT)) {
-                    cannon.moveLeft();
-                }
-                if (keys.contains(KeyCode.RIGHT)) {
-                    cannon.moveRight();
-                }
-                if (keys.contains(KeyCode.UP)) {
-                    cannon.turnLeft();
-                }
-                if (keys.contains(KeyCode.DOWN)) {
-                    cannon.turnRight();
-                }
-                if (keys.contains(KeyCode.ENTER)) {
-                    projectiles.add(cannon.shoot(PROJECTILE_POWERS[projectileType]));
-                }
-                if (keys.contains(KeyCode.DIGIT1)) {
-                    projectileType = 0;
-                }
-                if (keys.contains(KeyCode.DIGIT2)) {
-                    projectileType = 1;
-                }
-                if (keys.contains(KeyCode.DIGIT3)) {
-                    projectileType = 2;
-                }
-                if (keys.contains(KeyCode.DIGIT4)) {
-                    projectileType = 3;
-                }
-                if (keys.contains(KeyCode.DIGIT5)) {
-                    projectileType = 4;
-                }
-                keys.clear();
-                projectiles.forEach(Projectile::move);
-                var iterator = projectiles.iterator();
-                while (iterator.hasNext()) {
-                    var current = iterator.next();
-                    if (!current.isAlive()) {
-                        explosions.add(current.createExplosion());
-                        iterator.remove();
-                    }
-                }
-                explosions.removeIf(current -> !current.isAlive());
-                renderer.fillBackground(Color.LIGHTBLUE);
-                landscape.render(renderer);
-                target.render(renderer);
-                cannon.render(renderer);
-                projectiles.forEach(projectile -> projectile.render(renderer));
-                explosions.forEach(explosion -> explosion.render(renderer));
-                renderer.writeText("1-5 to select type");
-                for (var explosion : explosions) {
-                    if (explosion.isTargetDestroyed(target)) {
-                        renderer.clear();
-                        renderer.writeText("Game over");
-                        this.stop();
-                    }
+        private GameAnimation(@NotNull GraphicsContext graphicsContext, int defaultType, @NotNull Set<KeyCode> keys) {
+            renderer = new Renderer(graphicsContext, WIDTH, HEIGHT, WIDTH_IN_METERS);
+            landscape = new Landscape(PEAKS_COUNT, renderer.getWidthInMeters(), renderer.getHeightInMeters(), SEED);
+            cannon = new Cannon(landscape, CANNON_POSITION);
+            target = new Target(TARGET_POSITION, TARGET_RADIUS, landscape);
+            projectileType = defaultType;
+            this.keys = keys;
+        }
+
+        private void processKeys() {
+            for (var key : keys) {
+                switch (key) {
+                    case LEFT:
+                        cannon.moveLeft();
+                        break;
+                    case RIGHT:
+                        cannon.moveRight();
+                        break;
+                    case UP:
+                        cannon.turnLeft();
+                        break;
+                    case DOWN:
+                        cannon.turnRight();
+                        break;
+                    case ENTER:
+                        projectiles.add(cannon.shoot(PROJECTILE_POWERS[projectileType]));
+                        break;
+                    case DIGIT1:
+                        projectileType = 0;
+                        break;
+                    case DIGIT2:
+                        projectileType = 1;
+                        break;
+                    case DIGIT3:
+                        projectileType = 2;
+                        break;
+                    case DIGIT4:
+                        projectileType = 3;
+                        break;
+                    case DIGIT5:
+                        projectileType = 4;
+                        break;
                 }
             }
-        }.start();
-        primaryStage.show();
+            keys.clear();
+        }
+
+        private void processProjectiles() {
+            projectiles.forEach(Projectile::move);
+            var iterator = projectiles.iterator();
+            while (iterator.hasNext()) {
+                var current = iterator.next();
+                if (!current.isAlive()) {
+                    explosions.add(current.createExplosion());
+                    iterator.remove();
+                }
+            }
+        }
+
+        private void processExplosions() {
+            explosions.removeIf(current -> !current.isAlive());
+        }
+
+        private void endGame() {
+            renderer.clear();
+            renderer.writeText("Game over");
+            this.stop();
+        }
+
+        private void renderExplosions() {
+            for (var explosion : explosions) {
+                if (explosion.isTargetDestroyed(target)) {
+                    endGame();
+                }
+            }
+        }
+
+        private void render() {
+            renderer.fillBackground(Color.LIGHTBLUE);
+            landscape.render(renderer);
+            target.render(renderer);
+            cannon.render(renderer);
+            projectiles.forEach(projectile -> projectile.render(renderer));
+            explosions.forEach(explosion -> explosion.render(renderer));
+            renderer.writeText("1-5 to select type");
+            renderExplosions();
+        }
+
+        @Override
+        public void handle(long now) {
+            renderer.clear();
+            processKeys();
+            processProjectiles();
+            processExplosions();
+            render();
+        }
     }
 }

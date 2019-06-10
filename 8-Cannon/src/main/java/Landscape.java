@@ -1,5 +1,6 @@
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -9,6 +10,7 @@ class Landscape implements Renderable {
     private static final double HEIGHT_MULTIPLIER = 0.5;
     private double minX;
     private double maxX;
+    @NotNull
     private Point2D[] peaks;
 
     /**
@@ -45,7 +47,7 @@ class Landscape implements Renderable {
     }
 
     /** {@inheritDoc} */
-    public void render(Renderer renderer) {
+    public void render(@NotNull Renderer renderer) {
         for (int i = 0; i < peaks.length - 1; i++) {
             renderer.drawLine(peaks[i], peaks[i + 1]);
             renderer.fillUnderLine(peaks[i], peaks[i + 1], Color.DARKGREEN);

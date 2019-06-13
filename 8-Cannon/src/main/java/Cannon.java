@@ -15,6 +15,11 @@ class Cannon implements Renderable {
     @NotNull
     private Landscape landscape;
 
+    @NotNull
+    private Point2D getBarrelVector() {
+        return new Point2D(Math.cos(angle), Math.sin(angle)).multiply(BARREL_LENGTH);
+    }
+
     /** Creates cannon at given landscape at given position */
     Cannon(@NotNull Landscape landscape, double x) {
         position = new Point2D(x, landscape.getHeightAt(x));
@@ -49,17 +54,18 @@ class Cannon implements Renderable {
         angle += ANGULAR_SPEED;
     }
 
+
     /** Creates a projectile from barrel with given power factor */
     @NotNull
     Projectile shoot(double powerFactor) {
-        var barrelVector = new Point2D(Math.cos(angle), Math.sin(angle)).multiply(BARREL_LENGTH);
+        var barrelVector = getBarrelVector();
         return new Projectile(position.add(barrelVector), barrelVector.normalize().multiply(INITIAL_SPEED_FACTOR),
                 powerFactor, landscape);
     }
 
     /** {@inheritDoc} */
     public void render(@NotNull Renderer renderer) {
-        var barrelVector = new Point2D(Math.cos(angle), Math.sin(angle)).multiply(BARREL_LENGTH);
+        var barrelVector = getBarrelVector();
         renderer.drawLine(position, position.add(barrelVector));
         renderer.drawCircle(position, CANNON_RADIUS, Color.GREEN);
     }

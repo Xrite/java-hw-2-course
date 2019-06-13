@@ -19,13 +19,12 @@ import java.util.stream.Collectors;
  */
 class Testing {
     @NotNull
-    private static final Predicate<?>[] predicates = {
-            (Method method) -> method.isAnnotationPresent(After.class),
-            (Method method) -> method.isAnnotationPresent(Before.class),
-            (Method method) -> method.isAnnotationPresent(AfterClass.class),
-            (Method method) -> method.isAnnotationPresent(BeforeClass.class),
-            (Method method) -> method.isAnnotationPresent(Test.class),
-    };
+    private static final List<Predicate<Method>> predicates = List.of(
+            TestingSummary.Predicates::isAfter,
+            TestingSummary.Predicates::isBefore,
+            TestingSummary.Predicates::isAfterClass,
+            TestingSummary.Predicates::isBeforeClass,
+            TestingSummary.Predicates::isTest);
 
     /**
      * Performs testing of class with the given name
@@ -51,16 +50,15 @@ class Testing {
      *                          multiple annotation or testing method has arguments or method that is not annotated
      *                          with @Test throws an exception or some unexpected problem occurred
      */
-    @SuppressWarnings("unchecked")
     @NotNull
     static TestingSummary testClass(@NotNull Class<?> clazz) throws TestingException {
         var instance = getInstance(clazz);
-        var filtered = filterUniqueMethods(clazz, (Predicate<Method>[]) predicates);
-        var afterMethods = filtered[0];
-        var beforeMethods = filtered[1];
-        var afterClassMethods = filtered[2];
-        var beforeClassMethods = filtered[3];
-        var testMethods = filtered[4];
+        var filtered = filterUniqueMethods(clazz);
+        var afterMethods = filtered.get(0);
+        var beforeMethods = filtered.get(1);
+        var afterClassMethods = filtered.get(2);
+        var beforeClassMethods = filtered.get(3);
+        var testMethods = filtered.get(4);
         var summary = TestingSummary.empty();
         invokeMethodsNoThrows(instance, beforeClassMethods, "@BeforeClass");
         for (var method : testMethods) {
@@ -106,26 +104,25 @@ class Testing {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @NotNull
-    private static List<Method>[] filterUniqueMethods(@NotNull Class<?> clazz, @NotNull Predicate<Method>[] predicates)
+    private static List<List<Method>> filterUniqueMethods(@NotNull Class<?> clazz)
             throws TestingException {
         var methods = clazz.getDeclaredMethods();
-        var result = (ArrayList<Method>[]) new ArrayList[predicates.length];
-        for (int i = 0; i < predicates.length; i++) {
-            result[i] = new ArrayList<>();
+        var result = new ArrayList<List<Method>>();
+        for (int i = 0; i < Testing.predicates.size(); i++) {
+            result.add(new ArrayList<>());
         }
         for (var method : methods) {
             method.setAccessible(true);
             int predicatesSatisfied = 0;
-            for (int i = 0; i < predicates.length; i++) {
-                if (predicates[i].test(method)) {
+            for (int i = 0; i < Testing.predicates.size(); i++) {
+                if (Testing.predicates.get(i).test(method)) {
                     if (method.getParameterCount() != 0) {
                         throw new TestingException("Testing methods must have no arguments. Failed on "
                                 + method.getName());
                     }
                     predicatesSatisfied++;
-                    result[i].add(method);
+                    result.get(i).add(method);
                 }
                 if (predicatesSatisfied > 1) {
                     throw new TestingException("Method " + method.getName() + " have multiple annotations");
@@ -174,6 +171,28 @@ class Testing {
         List<MethodSummary.Ignored> getIgnored() {
             return tests.stream().filter(test -> test instanceof TestingSummary.MethodSummary.Ignored)
                     .map(test -> (MethodSummary.Ignored) test).collect(Collectors.toList());
+        }
+
+        private static class Predicates {
+            private static boolean isAfter(@NotNull Method method) {
+                return method.isAnnotationPresent(After.class);
+            }
+
+            private static boolean isBefore(@NotNull Method method) {
+                return method.isAnnotationPresent(Before.class);
+            }
+
+            private static boolean isTest(@NotNull Method method) {
+                return method.isAnnotationPresent(Test.class);
+            }
+
+            private static boolean isAfterClass(@NotNull Method method) {
+                return method.isAnnotationPresent(AfterClass.class);
+            }
+
+            private static boolean isBeforeClass(@NotNull Method method) {
+                return method.isAnnotationPresent(BeforeClass.class);
+            }
         }
 
         /** Class that contains method testing summary */
